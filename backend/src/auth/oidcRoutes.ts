@@ -39,7 +39,11 @@ type RegisterOidcRoutesDeps = {
   generateTokens: (
     userId: string,
     email: string,
-    options?: { impersonatorId?: string }
+    options?: {
+      impersonatorId?: string;
+      authProvider?: "local" | "oidc";
+      oidcGroups?: string[];
+    }
   ) => { accessToken: string; refreshToken: string };
   setAuthCookies: (
     req: Request,
@@ -66,6 +70,8 @@ type RegisterOidcRoutesDeps = {
       scopes: string;
       emailClaim: string;
       emailVerifiedClaim: string;
+      groupsClaim: string;
+      adminGroups: string[];
       requireEmailVerified: boolean;
       jitProvisioning: boolean;
       firstUserAdmin: boolean;
@@ -256,6 +262,37 @@ const readBooleanClaim = (claims: Record<string, unknown>, key: string): boolean
     if (normalized === "false" || normalized === "0") return false;
   }
   return null;
+};
+
+const readClaimByPath = (claims: Record<string, unknown>, keyPath: string): unknown => {
+  const segments = keyPath
+    .split(".")
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0);
+  if (segments.length === 0) return undefined;
+
+  let current: unknown = claims;
+  for (const segment of segments) {
+    if (typeof current !== "object" || current === null) return undefined;
+    current = (current as Record<string, unknown>)[segment];
+  }
+  return current;
+};
+
+const normalizeClaimGroups = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value
+      .filter((entry): entry is string => typeof entry === "string")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+  }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+  }
+  return [];
 };
 
 const getOidcErrorMessage = (errorCode: string): string => {
@@ -588,6 +625,13 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         return redirectToLoginWithError(req, res, "unverified_email", flow.returnTo);
       }
 
+      const oidcGroups = Array.from(
+        new Set(normalizeClaimGroups(readClaimByPath(claims, config.oidc.groupsClaim)))
+      );
+      const adminGroups = new Set(config.oidc.adminGroups);
+      const shouldBeAdmin =
+        adminGroups.size > 0 && oidcGroups.some((group) => adminGroups.has(group));
+
       const user = await prisma.$transaction(async (tx) => {
         const linkedIdentity = await tx.authIdentity.findUnique({
           where: {
@@ -667,6 +711,17 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
           },
         });
 
+        if (adminGroups.size > 0) {
+          const nextRole = shouldBeAdmin ? "ADMIN" : "USER";
+          if (resolvedUser.role !== nextRole) {
+            resolvedUser = await tx.user.update({
+              where: { id: resolvedUser.id },
+              data: { role: nextRole },
+              select: userSelect,
+            });
+          }
+        }
+
         return resolvedUser;
       });
 
@@ -674,7 +729,10 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         return redirectToLoginWithError(req, res, "account_inactive", flow.returnTo);
       }
 
-      const { accessToken, refreshToken } = generateTokens(user.id, user.email);
+      const { accessToken, refreshToken } = generateTokens(user.id, user.email, {
+        authProvider: "oidc",
+        oidcGroups,
+      });
       setAuthCookies(req, res, { accessToken, refreshToken });
 
       if (config.enableRefreshTokenRotation) {

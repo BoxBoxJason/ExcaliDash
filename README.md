@@ -290,6 +290,10 @@ backend:
     # - OIDC_ID_TOKEN_SIGNED_RESPONSE_ALG=HS256
     - OIDC_REDIRECT_URI=https://excalidash.example.com/api/auth/oidc/callback
     - OIDC_SCOPES=openid profile email
+    # Optional: path to groups/roles claim in ID token/user claims (supports dot path)
+    - OIDC_GROUPS_CLAIM=groups
+    # Optional: comma-separated group names that should be ADMIN in ExcaliDash
+    - OIDC_ADMIN_GROUPS=excalidash-admins,platform-admins
 ```
 
 Quick preflight check (recommended before starting backend):
@@ -317,6 +321,8 @@ Notes:
 | Authentik issuer format     | Use provider issuer URL: `https://<authentik-host>/application/o/<provider-slug>/`.                                           |
 | Authentik `email_verified`  | If Authentik does not emit `email_verified=true`, either add the scope mapping or set `OIDC_REQUIRE_EMAIL_VERIFIED=false`.   |
 | Redirect URI                | Must be exact callback: `https://<excalidash-host>/api/auth/oidc/callback`.                                                   |
+| OIDC admin mapping          | If `OIDC_ADMIN_GROUPS` is set, admin role is reconciled on each authenticated request for OIDC users: users in those groups are promoted to `ADMIN`, users not in those groups are demoted to `USER`. |
+| Legacy sessions             | Users with old sessions (issued before group claims were embedded) should sign out/in once so OIDC group claims are refreshed. |
 
 </details>
 
