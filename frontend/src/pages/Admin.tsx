@@ -1,32 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useBeforeUnload, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
-import { ConfirmModal } from '../components/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
 import type { Collection } from '../types';
-import { Shield, UserPlus, RefreshCw, UserCog, LogIn, Settings as SettingsIcon, KeyRound } from 'lucide-react';
+import { UserPlus, RefreshCw, UserCog } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { getPasswordPolicy, validatePassword } from '../utils/passwordPolicy';
 import { PasswordRequirements } from '../components/PasswordRequirements';
+import { AccessControlCard } from './admin/AccessControlCard';
+import { LoginRateLimitCard } from './admin/LoginRateLimitCard';
+import { UserActionModals } from './admin/UserActionModals';
+import { UsersTable } from './admin/UsersTable';
+import type { AdminUser } from './admin/types';
 import {
   IMPERSONATION_KEY,
   type ImpersonationState,
   readImpersonationState,
   USER_KEY,
 } from '../utils/impersonation';
-
-type AdminUser = {
-  id: string;
-  username: string | null;
-  email: string;
-  name: string;
-  role: 'ADMIN' | 'USER' | string;
-  mustResetPassword: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
 
 type LoginRateLimitFormState = {
   enabled: boolean;
@@ -729,324 +721,56 @@ export const Admin: React.FC = () => {
         </div>
       )}
 
-      <div className="mb-6 bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] p-4 sm:p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-emerald-50 dark:bg-neutral-800 rounded-xl flex items-center justify-center border-2 border-emerald-100 dark:border-neutral-700">
-            <UserPlus size={24} className="text-emerald-700 dark:text-emerald-300" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Access Control</h2>
-            <p className="text-sm text-slate-600 dark:text-neutral-400 font-medium">
-              {registrationEnabled === null
-                ? 'Loading…'
-                : !localRegistrationAllowed
-                  ? 'Local self-sign-up is managed by OIDC-only mode.'
-                  : registrationEnabled
-                    ? 'New users can create local accounts.'
-                    : 'Local self-sign-up is disabled.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">Local self-sign-up</label>
-            <button
-              type="button"
-              onClick={() => void toggleRegistration()}
-              disabled={registrationLoading || registrationEnabled === null || !localRegistrationAllowed}
-              className={`w-full px-4 py-3 rounded-xl border-2 font-bold transition-all text-sm ${
-                !localRegistrationAllowed
-                  ? 'border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400'
-                  : registrationEnabled
-                  ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
-                  : 'border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'
-              }`}
-            >
-              {registrationEnabled === null
-                ? 'Loading…'
-                : !localRegistrationAllowed
-                  ? 'Managed by OIDC'
-                  : registrationLoading
-                    ? 'Saving…'
-                    : registrationEnabled
-                      ? 'Enabled'
-                      : 'Disabled'}
-            </button>
-          </div>
-          {oidcEnabled && (
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-                {oidcProviderName || 'OIDC'} auto-provisioning
-              </label>
-              <button
-                type="button"
-                onClick={() => void toggleOidcJitProvisioning()}
-                disabled={registrationLoading || oidcJitProvisioningEnabled === null}
-                className={`w-full px-4 py-3 rounded-xl border-2 font-bold transition-all text-sm ${
-                  oidcJitProvisioningEnabled
-                    ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200'
-                    : 'border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'
-                }`}
-              >
-                {oidcJitProvisioningEnabled === null
-                  ? 'Loading…'
-                  : registrationLoading
-                    ? 'Saving…'
-                    : oidcJitProvisioningEnabled
-                      ? 'Enabled'
-                      : 'Invite-only'}
-              </button>
-            </div>
-          )}
-        </div>
-        {oidcEnabled && oidcJitProvisioningEnabled !== null && (
-          <div className="mt-4 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20 p-4 text-sm text-blue-900 dark:text-blue-100">
-            <div className="font-semibold">
-              {oidcProviderName || 'OIDC'} access: {oidcJitProvisioningEnabled ? 'Auto-provisioning enabled' : 'Invite-only'}
-            </div>
-            <div className="mt-1">
-              {oidcJitProvisioningEnabled
-                ? 'Any successfully authenticated OIDC user can get an account on first sign-in.'
-                : 'Only users pre-created below can sign in through OIDC. Use OIDC-only invites for accounts that should not have a local password.'}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="mb-6 bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] p-4 sm:p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-slate-50 dark:bg-neutral-800 rounded-xl flex items-center justify-center border-2 border-slate-200 dark:border-neutral-700">
-            <SettingsIcon size={24} className="text-slate-700 dark:text-neutral-200" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Login Rate Limiting</h2>
-            <p className="text-sm text-slate-600 dark:text-neutral-400 font-medium">
-              Reduce brute-force attacks; disable only for trusted environments. Changes are saved automatically.
-            </p>
-          </div>
-          {loginRateLimitLoading && (
-            <span className="ml-auto text-sm text-slate-500 dark:text-neutral-500 font-medium">Loading…</span>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">Rate Limiting</label>
-            <button
-              type="button"
-              onClick={() => setLoginRateLimitEnabled(!loginRateLimitEnabled)}
-              className={`w-full px-4 py-3 rounded-xl border-2 font-bold transition-all text-sm ${
-                loginRateLimitEnabled
-                  ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
-                  : 'border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'
-              }`}
-            >
-              {loginRateLimitEnabled ? 'Enabled' : 'Disabled'}
-            </button>
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">Window (minutes)</label>
-            <input
-              type="number"
-              min={1}
-              value={loginRateLimitWindowMinutes}
-              onChange={e => setLoginRateLimitWindowMinutes(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 rounded-xl text-slate-900 dark:text-white outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">Max attempts</label>
-            <input
-              type="number"
-              min={1}
-              value={loginRateLimitMax}
-              onChange={e => setLoginRateLimitMax(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 rounded-xl text-slate-900 dark:text-white outline-none"
-            />
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-              Reset lockout (email/username)
-            </label>
-            <input
-              list="admin-user-identifiers"
-              value={resetIdentifier}
-              onChange={e => setResetIdentifier(e.target.value)}
-              placeholder="user@example.com"
-              className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 rounded-xl text-slate-900 dark:text-white outline-none"
-            />
-            <datalist id="admin-user-identifiers">
-              {users.map(u => (
-                <option key={u.id} value={u.email} />
-              ))}
-            </datalist>
-          </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-neutral-400">
-              {loginRateLimitSaving || loginRateLimitAutoSaveQueued
-                ? 'Saving changes…'
-                : loginRateLimitDirty
-                  ? 'Unsaved changes'
-                  : 'All changes saved'}
-            </p>
-            <button
-              onClick={() => void resetLoginRateLimit()}
-              disabled={resetLoading}
-              className="px-4 py-2 text-sm font-bold rounded-xl border-2 border-black dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-60"
-            >
-              {resetLoading ? 'Resetting…' : 'Reset'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
-        <div className="px-4 sm:px-6 py-4 border-b-2 border-slate-200 dark:border-neutral-700 flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-50 dark:bg-neutral-800 rounded-xl flex items-center justify-center border-2 border-indigo-100 dark:border-neutral-700">
-            <Shield size={20} className="text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Users</h2>
-          {loadingUsers && <span className="text-sm text-slate-500 dark:text-neutral-500 font-medium">Loading…</span>}
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 dark:bg-neutral-800/70">
-              <tr className="text-left">
-                <th className="px-4 sm:px-6 py-3 font-bold text-slate-600 dark:text-neutral-300">User</th>
-                <th className="px-4 sm:px-6 py-3 font-bold text-slate-600 dark:text-neutral-300">Role</th>
-                <th className="px-4 sm:px-6 py-3 font-bold text-slate-600 dark:text-neutral-300">Active</th>
-                <th className="px-4 sm:px-6 py-3 font-bold text-slate-600 dark:text-neutral-300">Must Reset</th>
-                <th className="px-4 sm:px-6 py-3 font-bold text-slate-600 dark:text-neutral-300">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u.id} className="border-t border-slate-100 dark:border-neutral-800">
-                  <td className="px-4 sm:px-6 py-4 min-w-[220px]">
-                    <div className="font-bold text-slate-900 dark:text-white truncate">{u.name}</div>
-                    <div className="text-slate-500 dark:text-neutral-400 truncate">{u.email}</div>
-                    {u.username && <div className="text-xs text-slate-400 dark:text-neutral-500">@{u.username}</div>}
-                  </td>
-                  <td className="px-4 sm:px-6 py-4">
-                    <select
-                      value={u.role}
-                      onChange={e => patchUser(u.id, { role: e.target.value })}
-                      disabled={u.id === authUser?.id}
-                      className="px-3 py-2 bg-white dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 rounded-xl font-bold text-slate-900 dark:text-white"
-                    >
-                      <option value="USER">USER</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
-                  </td>
-                  <td className="px-4 sm:px-6 py-4">
-                    <button
-                      onClick={() => patchUser(u.id, { isActive: !u.isActive })}
-                      disabled={u.id === authUser?.id}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 font-bold ${
-                        u.isActive
-                          ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
-                          : 'border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'
-                      }`}
-                    >
-                      {u.isActive ? 'Active' : 'Inactive'}
-                    </button>
-                  </td>
-                  <td className="px-4 sm:px-6 py-4">
-                    <button
-                      onClick={() => patchUser(u.id, { mustResetPassword: !u.mustResetPassword })}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 font-bold ${
-                        u.mustResetPassword
-                          ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200'
-                          : 'border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'
-                      }`}
-                    >
-                      {u.mustResetPassword ? 'Yes' : 'No'}
-                    </button>
-                  </td>
-                  <td className="px-4 sm:px-6 py-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => setImpersonateTarget(u)}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-black dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-200 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all"
-                      >
-                        <LogIn size={16} />
-                        Impersonate
-                      </button>
-                      <button
-                        onClick={() => void generateTempPassword(u)}
-                        disabled={u.id === authUser?.id || resetPasswordLoadingId === u.id}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-black dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-200 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0"
-                        title={u.id === authUser?.id ? 'Use Profile → Change Password for your own account' : 'Generate a temporary password'}
-                      >
-                        <KeyRound size={16} />
-                        {resetPasswordLoadingId === u.id ? 'Generating…' : 'Reset Password'}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {users.length === 0 && !loadingUsers && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-6 text-slate-500 dark:text-neutral-500 font-medium">
-                    No users found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <ConfirmModal
-        isOpen={!!impersonateTarget}
-        title="Start impersonation?"
-        message={
-          impersonateTarget
-            ? `You will act as ${impersonateTarget.email} until you stop impersonation. Continue?`
-            : ''
-        }
-        confirmText="Impersonate"
-        onConfirm={() => {
-          if (impersonateTarget) {
-            void startImpersonation(impersonateTarget);
-          }
-          setImpersonateTarget(null);
-        }}
-        onCancel={() => setImpersonateTarget(null)}
+      <AccessControlCard
+        registrationEnabled={registrationEnabled}
+        localRegistrationAllowed={localRegistrationAllowed}
+        oidcEnabled={oidcEnabled}
+        oidcProviderName={oidcProviderName}
+        oidcJitProvisioningEnabled={oidcJitProvisioningEnabled}
+        loading={registrationLoading}
+        onToggleRegistration={toggleRegistration}
+        onToggleOidcJitProvisioning={toggleOidcJitProvisioning}
       />
 
-      <ConfirmModal
-        isOpen={!!resetPasswordResult}
-        title="Temporary password"
-        message={
-          resetPasswordResult ? (
-            <div className="space-y-3">
-              <div className="text-xs">
-                Temporary password for <span className="font-bold text-slate-900 dark:text-neutral-100">{resetPasswordResult.email}</span>. They will be prompted to set a new password after signing in.
-              </div>
-              <div className="px-3 py-2 rounded-xl border-2 border-black dark:border-neutral-700 bg-white dark:bg-neutral-900 font-mono text-sm text-slate-900 dark:text-neutral-100 break-all">
-                {resetPasswordResult.tempPassword}
-              </div>
-            </div>
-          ) : (
-            ''
-          )
+      <LoginRateLimitCard
+        loading={loginRateLimitLoading}
+        saving={loginRateLimitSaving}
+        autoSaveQueued={loginRateLimitAutoSaveQueued}
+        dirty={loginRateLimitDirty}
+        enabled={loginRateLimitEnabled}
+        windowMinutes={loginRateLimitWindowMinutes}
+        maxAttempts={loginRateLimitMax}
+        resetIdentifier={resetIdentifier}
+        resetLoading={resetLoading}
+        userEmails={users.map((user) => user.email)}
+        onToggleEnabled={() => setLoginRateLimitEnabled(!loginRateLimitEnabled)}
+        onWindowMinutesChange={setLoginRateLimitWindowMinutes}
+        onMaxAttemptsChange={setLoginRateLimitMax}
+        onResetIdentifierChange={setResetIdentifier}
+        onReset={resetLoginRateLimit}
+      />
+
+      <UsersTable
+        users={users}
+        loading={loadingUsers}
+        currentUserId={authUser?.id}
+        resetPasswordLoadingId={resetPasswordLoadingId}
+        onRoleChange={(user, role) => patchUser(user.id, { role })}
+        onToggleActive={(user) => patchUser(user.id, { isActive: !user.isActive })}
+        onToggleMustReset={(user) =>
+          patchUser(user.id, { mustResetPassword: !user.mustResetPassword })
         }
-        confirmText="Copy"
-        cancelText="Close"
-        isDangerous={false}
-        variant="success"
-        onConfirm={() => {
-          if (!resetPasswordResult) return;
-          void navigator.clipboard?.writeText(resetPasswordResult.tempPassword);
-          setResetPasswordResult(null);
-        }}
-        onCancel={() => setResetPasswordResult(null)}
+        onImpersonate={setImpersonateTarget}
+        onResetPassword={generateTempPassword}
+      />
+
+      <UserActionModals
+        impersonateTarget={impersonateTarget}
+        resetPasswordResult={resetPasswordResult}
+        onConfirmImpersonation={startImpersonation}
+        onCancelImpersonation={() => setImpersonateTarget(null)}
+        onCopyPassword={(result) => navigator.clipboard?.writeText(result.tempPassword)}
+        onClosePassword={() => setResetPasswordResult(null)}
       />
       <Toaster position="bottom-center" />
     </Layout>
