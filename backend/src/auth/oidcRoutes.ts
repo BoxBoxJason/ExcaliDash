@@ -399,7 +399,9 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
     );
   };
 
-  const getOidcClient = async () => {
+  const buildOidcClient = async (
+    idTokenSignedResponseAlgOverride: string | null = null,
+  ) => {
     if (
       !config.oidc.issuerUrl ||
       !config.oidc.clientId ||
@@ -409,39 +411,44 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         "OIDC is enabled but provider configuration is incomplete",
       );
     }
+
+    const discoveryUrl =
+      config.oidc.discoveryUrl || (config.oidc.issuerUrl as string);
+    const clientIssuer = await Issuer.discover(discoveryUrl);
+
+    const supportedMethods = (clientIssuer as any)?.metadata
+      ?.token_endpoint_auth_methods_supported as string[] | undefined;
+    const tokenEndpointAuthMethod = selectTokenEndpointAuthMethod({
+      hasClientSecret: Boolean(config.oidc.clientSecret),
+      supported: supportedMethods,
+      configured: config.oidc.tokenEndpointAuthMethod,
+    });
+    const defaultIdTokenAlg = resolveIdTokenSignedResponseAlg(
+      config.oidc.idTokenSignedResponseAlg,
+      Boolean(config.oidc.clientSecret),
+      (clientIssuer as any)?.metadata ?? {},
+    );
+    const idTokenSignedResponseAlg =
+      idTokenSignedResponseAlgOverride || defaultIdTokenAlg;
+
+    const clientConfig: Record<string, unknown> = {
+      client_id: config.oidc.clientId as string,
+      redirect_uris: [config.oidc.redirectUri as string],
+      response_types: ["code"],
+      token_endpoint_auth_method: tokenEndpointAuthMethod,
+      id_token_signed_response_alg: idTokenSignedResponseAlg,
+    };
+
+    if (config.oidc.clientSecret) {
+      clientConfig.client_secret = config.oidc.clientSecret;
+    }
+
+    return new clientIssuer.Client(clientConfig as any);
+  };
+
+  const getOidcClient = async () => {
     if (!oidcClientPromise) {
-      oidcClientPromise = (async () => {
-        const discoveryUrl =
-          config.oidc.discoveryUrl || (config.oidc.issuerUrl as string);
-        const clientIssuer = await Issuer.discover(discoveryUrl);
-
-        const supportedMethods = (clientIssuer as any)?.metadata
-          ?.token_endpoint_auth_methods_supported as string[] | undefined;
-        const tokenEndpointAuthMethod = selectTokenEndpointAuthMethod({
-          hasClientSecret: Boolean(config.oidc.clientSecret),
-          supported: supportedMethods,
-          configured: config.oidc.tokenEndpointAuthMethod,
-        });
-        const idTokenSignedResponseAlg = resolveIdTokenSignedResponseAlg(
-          config.oidc.idTokenSignedResponseAlg,
-          Boolean(config.oidc.clientSecret),
-          (clientIssuer as any)?.metadata ?? {}
-        );
-
-        const clientConfig: Record<string, unknown> = {
-          client_id: config.oidc.clientId as string,
-          redirect_uris: [config.oidc.redirectUri as string],
-          response_types: ["code"],
-          token_endpoint_auth_method: tokenEndpointAuthMethod,
-          id_token_signed_response_alg: idTokenSignedResponseAlg,
-        };
-
-        if (config.oidc.clientSecret) {
-          clientConfig.client_secret = config.oidc.clientSecret;
-        }
-
-        return new clientIssuer.Client(clientConfig as any);
-      })();
+      oidcClientPromise = buildOidcClient();
     }
 
     try {
@@ -595,7 +602,6 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
 
       const client = await getOidcClient();
       const params = client.callbackParams(req);
-<<<<<<< HEAD
       const checks = {
         state: flow.state,
         nonce: flow.nonce,
@@ -630,20 +636,9 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         tokenSet = await retryClient.callback(
           config.oidc.redirectUri as string,
           params,
-          checks
+          checks,
         );
       }
-=======
-      const tokenSet = await client.callback(
-        config.oidc.redirectUri as string,
-        params,
-        {
-          state: flow.state,
-          nonce: flow.nonce,
-          code_verifier: flow.codeVerifier,
-        },
-      );
->>>>>>> 882fa81 (fix: unreachable OIDC on dev mode)
       const claims = tokenSet.claims() as Record<string, unknown>;
       const issuer = client.issuer.issuer;
       const subject = readStringClaim(claims, "sub");
