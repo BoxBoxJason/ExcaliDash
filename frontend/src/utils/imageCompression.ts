@@ -79,6 +79,14 @@ const getTargetMimeType = (originalMimeType: string): string => {
   return "image/webp";
 };
 
+const COMPRESSION_ENABLED_KEY = "excalidash-image-compression";
+
+const isCompressionEnabled = (): boolean => {
+  if (typeof window === "undefined") return true;
+  const raw = window.localStorage?.getItem?.(COMPRESSION_ENABLED_KEY);
+  return raw !== "false";
+};
+
 const maybeCompressDataUrl = async (
   inputDataURL: string,
   sourceMimeType: string,
@@ -88,6 +96,16 @@ const maybeCompressDataUrl = async (
     minImprovementRatio?: number;
   }
 ): Promise<CompressionResult> => {
+  if (!isCompressionEnabled()) {
+    return {
+      dataURL: inputDataURL,
+      mimeType: sourceMimeType,
+      width: 0,
+      height: 0,
+      changed: false,
+    };
+  }
+
   const minDataUrlLength = options?.minDataUrlLength ?? DEFAULT_MIN_DATA_URL_LENGTH;
   const maxDimension = options?.maxDimension ?? DEFAULT_MAX_DIMENSION;
   const minImprovementRatio = options?.minImprovementRatio ?? DEFAULT_MIN_IMPROVEMENT_RATIO;
