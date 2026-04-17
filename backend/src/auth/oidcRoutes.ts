@@ -142,6 +142,29 @@ const resolveIdTokenSignedResponseAlg = (
   return "RS256";
 };
 
+const parseJwtAlgMismatchError = (
+  error: unknown
+): { expected: string; got: string } | null => {
+  if (!(error instanceof Error)) return null;
+  const match = error.message.match(
+    /expected\s+([A-Za-z0-9_-]+)\s*,\s*got:\s*([A-Za-z0-9_-]+)/i
+  );
+  if (!match) return null;
+  return {
+    expected: String(match[1]).toUpperCase(),
+    got: String(match[2]).toUpperCase(),
+  };
+};
+
+const canUseIdTokenSigningAlg = (
+  alg: string,
+  hasClientSecret: boolean
+): boolean => {
+  if (alg.toLowerCase() === "none") return false;
+  if (/^HS/i.test(alg)) return hasClientSecret;
+  return true;
+};
+
 const sanitizeReturnTo = (rawValue: unknown): string => {
   if (typeof rawValue !== "string") return "/";
   const value = rawValue.trim();
@@ -318,41 +341,47 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
     );
   };
 
-  const getOidcClient = async () => {
+  const buildOidcClient = async (
+    idTokenSignedResponseAlgOverride: string | null = null
+  ) => {
     if (!config.oidc.issuerUrl || !config.oidc.clientId || !config.oidc.redirectUri) {
       throw new Error("OIDC is enabled but provider configuration is incomplete");
     }
+    const issuer = await Issuer.discover(config.oidc.issuerUrl as string);
+    const supportedMethods = (issuer as any)?.metadata?.token_endpoint_auth_methods_supported as
+      | string[]
+      | undefined;
+    const tokenEndpointAuthMethod = selectTokenEndpointAuthMethod({
+      hasClientSecret: Boolean(config.oidc.clientSecret),
+      supported: supportedMethods,
+      configured: config.oidc.tokenEndpointAuthMethod,
+    });
+    const defaultIdTokenAlg = resolveIdTokenSignedResponseAlg(
+      config.oidc.idTokenSignedResponseAlg,
+      Boolean(config.oidc.clientSecret),
+      (issuer as any)?.metadata ?? {}
+    );
+    const idTokenSignedResponseAlg =
+      idTokenSignedResponseAlgOverride || defaultIdTokenAlg;
+
+    const clientConfig: Record<string, unknown> = {
+      client_id: config.oidc.clientId as string,
+      redirect_uris: [config.oidc.redirectUri as string],
+      response_types: ["code"],
+      token_endpoint_auth_method: tokenEndpointAuthMethod,
+      id_token_signed_response_alg: idTokenSignedResponseAlg,
+    };
+
+    if (config.oidc.clientSecret) {
+      clientConfig.client_secret = config.oidc.clientSecret;
+    }
+
+    return new issuer.Client(clientConfig as any);
+  };
+
+  const getOidcClient = async () => {
     if (!oidcClientPromise) {
-      oidcClientPromise = (async () => {
-        const issuer = await Issuer.discover(config.oidc.issuerUrl as string);
-        const supportedMethods = (issuer as any)?.metadata?.token_endpoint_auth_methods_supported as
-          | string[]
-          | undefined;
-        const tokenEndpointAuthMethod = selectTokenEndpointAuthMethod({
-          hasClientSecret: Boolean(config.oidc.clientSecret),
-          supported: supportedMethods,
-          configured: config.oidc.tokenEndpointAuthMethod,
-        });
-        const idTokenSignedResponseAlg = resolveIdTokenSignedResponseAlg(
-          config.oidc.idTokenSignedResponseAlg,
-          Boolean(config.oidc.clientSecret),
-          (issuer as any)?.metadata ?? {}
-        );
-
-        const clientConfig: Record<string, unknown> = {
-          client_id: config.oidc.clientId as string,
-          redirect_uris: [config.oidc.redirectUri as string],
-          response_types: ["code"],
-          token_endpoint_auth_method: tokenEndpointAuthMethod,
-          id_token_signed_response_alg: idTokenSignedResponseAlg,
-        };
-
-        if (config.oidc.clientSecret) {
-          clientConfig.client_secret = config.oidc.clientSecret;
-        }
-
-        return new issuer.Client(clientConfig as any);
-      })();
+      oidcClientPromise = buildOidcClient();
     }
 
     try {
@@ -497,15 +526,43 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
 
       const client = await getOidcClient();
       const params = client.callbackParams(req);
-      const tokenSet = await client.callback(
-        config.oidc.redirectUri as string,
-        params,
-        {
-          state: flow.state,
-          nonce: flow.nonce,
-          code_verifier: flow.codeVerifier,
+      const checks = {
+        state: flow.state,
+        nonce: flow.nonce,
+        code_verifier: flow.codeVerifier,
+      };
+      let tokenSet;
+      try {
+        tokenSet = await client.callback(
+          config.oidc.redirectUri as string,
+          params,
+          checks
+        );
+      } catch (error) {
+        const mismatch = parseJwtAlgMismatchError(error);
+        const hasExplicitAlgOverride = Boolean(config.oidc.idTokenSignedResponseAlg);
+        const canRetryWithObservedAlg =
+          !hasExplicitAlgOverride &&
+          mismatch !== null &&
+          canUseIdTokenSigningAlg(
+            mismatch.got,
+            Boolean(config.oidc.clientSecret)
+          );
+
+        if (!canRetryWithObservedAlg) {
+          throw error;
         }
-      );
+
+        console.warn(
+          `OIDC callback id_token alg mismatch (expected ${mismatch.expected}, got ${mismatch.got}); retrying once with ${mismatch.got}.`
+        );
+        const retryClient = await buildOidcClient(mismatch.got);
+        tokenSet = await retryClient.callback(
+          config.oidc.redirectUri as string,
+          params,
+          checks
+        );
+      }
       const claims = tokenSet.claims() as Record<string, unknown>;
       const issuer = client.issuer.issuer;
       const subject = readStringClaim(claims, "sub");
