@@ -40,6 +40,11 @@ interface OidcConfig {
   clientSecret: string | null;
   redirectUri: string | null;
   idTokenSignedResponseAlg: string | null;
+  tokenEndpointAuthMethod:
+    | "none"
+    | "client_secret_basic"
+    | "client_secret_post"
+    | null;
   scopes: string;
   emailClaim: string;
   emailVerifiedClaim: string;
@@ -92,6 +97,25 @@ const getOptionalOidcSigningAlg = (key: string): string | null => {
   }
 
   return normalized;
+};
+
+const getOptionalOidcTokenEndpointAuthMethod = (
+  key: string,
+): "none" | "client_secret_basic" | "client_secret_post" | null => {
+  const raw = process.env[key];
+  if (!raw) return null;
+  const normalized = raw.trim().toLowerCase();
+  if (normalized.length === 0) return null;
+  if (
+    normalized === "none" ||
+    normalized === "client_secret_basic" ||
+    normalized === "client_secret_post"
+  ) {
+    return normalized;
+  }
+  throw new Error(
+    `${key} must be one of: none, client_secret_basic, client_secret_post`,
+  );
 };
 
 const parseCsvEnvList = (key: string): string[] => {
@@ -236,6 +260,9 @@ const resolveOidcConfig = (authMode: AuthMode): OidcConfig => {
   const idTokenSignedResponseAlg = enabled
     ? getOptionalOidcSigningAlg("OIDC_ID_TOKEN_SIGNED_RESPONSE_ALG")
     : null;
+  const tokenEndpointAuthMethod = enabled
+    ? getOptionalOidcTokenEndpointAuthMethod("OIDC_TOKEN_ENDPOINT_AUTH_METHOD")
+    : null;
   if (enabled && idTokenSignedResponseAlg && /^HS/i.test(idTokenSignedResponseAlg) && !clientSecret) {
     throw new Error(
       "OIDC_ID_TOKEN_SIGNED_RESPONSE_ALG using HS* requires OIDC_CLIENT_SECRET for a confidential client"
@@ -252,6 +279,7 @@ const resolveOidcConfig = (authMode: AuthMode): OidcConfig => {
     clientSecret,
     redirectUri,
     idTokenSignedResponseAlg,
+    tokenEndpointAuthMethod,
     scopes: getOptionalEnv("OIDC_SCOPES", "openid profile email"),
     emailClaim: getOptionalEnv("OIDC_EMAIL_CLAIM", "email"),
     emailVerifiedClaim: getOptionalEnv(
