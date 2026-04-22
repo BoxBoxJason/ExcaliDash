@@ -67,7 +67,11 @@ type RegisterOidcRoutesDeps = {
       clientSecret: string | null;
       redirectUri: string | null;
       idTokenSignedResponseAlg: string | null;
-      tokenEndpointAuthMethod: "none" | "client_secret_basic" | "client_secret_post" | null;
+      tokenEndpointAuthMethod:
+        | "none"
+        | "client_secret_basic"
+        | "client_secret_post"
+        | null;
       scopes: string;
       emailClaim: string;
       emailVerifiedClaim: string;
@@ -98,14 +102,17 @@ const normalizeEmail = (value: string): string => value.trim().toLowerCase();
 const resolveIdTokenSignedResponseAlg = (
   configuredAlg: string | null,
   hasClientSecret: boolean,
-  issuerMetadata: { id_token_signing_alg_values_supported?: unknown }
+  issuerMetadata: { id_token_signing_alg_values_supported?: unknown },
 ): string => {
   if (configuredAlg) return configuredAlg;
 
   const advertised = issuerMetadata.id_token_signing_alg_values_supported;
   if (Array.isArray(advertised)) {
     const supported = advertised
-      .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+      .filter(
+        (value): value is string =>
+          typeof value === "string" && value.trim().length > 0,
+      )
       .map((value) => value.trim());
     if (supported.length > 0) {
       // Some providers advertise broad support lists where ordering does not match tenant/client
@@ -128,7 +135,9 @@ const resolveIdTokenSignedResponseAlg = (
         }
       }
 
-      const firstAsymmetric = supported.find((alg) => !/^HS/i.test(alg) && alg.toLowerCase() !== "none");
+      const firstAsymmetric = supported.find(
+        (alg) => !/^HS/i.test(alg) && alg.toLowerCase() !== "none",
+      );
       if (firstAsymmetric) return firstAsymmetric;
 
       const hsSupported = supported.filter((alg) => /^HS/i.test(alg));
@@ -136,7 +145,7 @@ const resolveIdTokenSignedResponseAlg = (
         if (!hasClientSecret) {
           throw new Error(
             "OIDC provider only advertises HS* ID token signing algorithms, but OIDC_CLIENT_SECRET is not configured. " +
-              "Fix: set OIDC_CLIENT_SECRET for a confidential client, or configure your provider/client to sign ID tokens with an asymmetric algorithm (for example RS256)."
+              "Fix: set OIDC_CLIENT_SECRET for a confidential client, or configure your provider/client to sign ID tokens with an asymmetric algorithm (for example RS256).",
           );
         }
         const preferredHs = ["HS256", "HS384", "HS512"];
@@ -152,11 +161,11 @@ const resolveIdTokenSignedResponseAlg = (
 };
 
 const parseJwtAlgMismatchError = (
-  error: unknown
+  error: unknown,
 ): { expected: string; got: string } | null => {
   if (!(error instanceof Error)) return null;
   const match = error.message.match(
-    /expected\s+([A-Za-z0-9_-]+)\s*,\s*got:\s*([A-Za-z0-9_-]+)/i
+    /expected\s+([A-Za-z0-9_-]+)\s*,\s*got:\s*([A-Za-z0-9_-]+)/i,
   );
   if (!match) return null;
   return {
@@ -167,7 +176,7 @@ const parseJwtAlgMismatchError = (
 
 const canUseIdTokenSigningAlg = (
   alg: string,
-  hasClientSecret: boolean
+  hasClientSecret: boolean,
 ): boolean => {
   if (alg.toLowerCase() === "none") return false;
   if (/^HS/i.test(alg)) return hasClientSecret;
@@ -312,6 +321,19 @@ const normalizeClaimGroups = (value: unknown): string[] => {
   return [];
 };
 
+const canonicalizeIssuerUrl = (issuer: string): string => {
+  const trimmed = issuer.trim();
+  if (!trimmed) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed);
+    parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return trimmed.replace(/\/+$/, "");
+  }
+};
+
 const getOidcErrorMessage = (errorCode: string): string => {
   switch (errorCode) {
     case "missing_flow":
@@ -362,10 +384,14 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
   }): string => {
     const supported = opts.supported?.filter(Boolean);
     if (opts.configured) {
-      if (supported && supported.length > 0 && !supported.includes(opts.configured)) {
+      if (
+        supported &&
+        supported.length > 0 &&
+        !supported.includes(opts.configured)
+      ) {
         throw new Error(
           `OIDC_TOKEN_ENDPOINT_AUTH_METHOD=${opts.configured} is configured, but provider does not advertise support for it. ` +
-            `Supported methods: ${supported.join(", ")}`
+            `Supported methods: ${supported.join(", ")}`,
         );
       }
       return opts.configured;
@@ -415,6 +441,47 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
     const discoveryUrl =
       config.oidc.discoveryUrl || (config.oidc.issuerUrl as string);
     const clientIssuer = await Issuer.discover(discoveryUrl);
+    const expectedIssuer = canonicalizeIssuerUrl(
+      config.oidc.issuerUrl as string,
+    );
+    const discoveredIssuerRaw =
+      typeof (clientIssuer as any)?.issuer === "string"
+        ? ((clientIssuer as any).issuer as string)
+        : typeof (clientIssuer as any)?.metadata?.issuer === "string"
+          ? ((clientIssuer as any).metadata.issuer as string)
+          : null;
+    const discoveredIssuer = discoveredIssuerRaw
+      ? canonicalizeIssuerUrl(discoveredIssuerRaw)
+      : null;
+
+    if (!discoveredIssuer || discoveredIssuer !== expectedIssuer) {
+      if (discoveredIssuer && discoveredIssuer !== expectedIssuer) {
+        console.warn(
+          `[OIDC] Issuer mismatch between discovery (${discoveredIssuerRaw}) and configured OIDC_ISSUER_URL (${config.oidc.issuerUrl}); using configured issuer for token validation.`,
+        );
+      }
+
+      if (typeof (clientIssuer as any) === "object" && clientIssuer) {
+        if (
+          typeof (clientIssuer as any).metadata === "object" &&
+          (clientIssuer as any).metadata !== null
+        ) {
+          (clientIssuer as any).metadata.issuer = expectedIssuer;
+        } else {
+          (clientIssuer as any).metadata = { issuer: expectedIssuer };
+        }
+
+        // Some openid-client issuer objects expose `issuer` as a getter-only
+        // property; updating metadata keeps token validation issuer in sync.
+        const issuerDescriptor = Object.getOwnPropertyDescriptor(
+          clientIssuer,
+          "issuer",
+        );
+        if (!issuerDescriptor || issuerDescriptor.writable) {
+          (clientIssuer as any).issuer = expectedIssuer;
+        }
+      }
+    }
 
     const supportedMethods = (clientIssuer as any)?.metadata
       ?.token_endpoint_auth_methods_supported as string[] | undefined;
@@ -612,17 +679,19 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         tokenSet = await client.callback(
           config.oidc.redirectUri as string,
           params,
-          checks
+          checks,
         );
       } catch (error) {
         const mismatch = parseJwtAlgMismatchError(error);
-        const hasExplicitAlgOverride = Boolean(config.oidc.idTokenSignedResponseAlg);
+        const hasExplicitAlgOverride = Boolean(
+          config.oidc.idTokenSignedResponseAlg,
+        );
         const canRetryWithObservedAlg =
           !hasExplicitAlgOverride &&
           mismatch !== null &&
           canUseIdTokenSigningAlg(
             mismatch.got,
-            Boolean(config.oidc.clientSecret)
+            Boolean(config.oidc.clientSecret),
           );
 
         if (!canRetryWithObservedAlg) {
@@ -630,7 +699,7 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         }
 
         console.warn(
-          `OIDC callback id_token alg mismatch (expected ${mismatch.expected}, got ${mismatch.got}); retrying once with ${mismatch.got}.`
+          `OIDC callback id_token alg mismatch (expected ${mismatch.expected}, got ${mismatch.got}); retrying once with ${mismatch.got}.`,
         );
         const retryClient = await buildOidcClient(mismatch.got);
         tokenSet = await retryClient.callback(
@@ -764,16 +833,42 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
           await ensureTrashCollection(tx, resolvedUser.id);
         }
 
-        await tx.authIdentity.create({
-          data: {
-            userId: resolvedUser.id,
-            provider: OIDC_PROVIDER_KEY,
-            issuer,
-            subject,
-            emailAtLink: normalizedEmail,
-            lastLoginAt: new Date(),
+        const existingProviderIdentity = await tx.authIdentity.findUnique({
+          where: {
+            provider_userId: {
+              provider: OIDC_PROVIDER_KEY,
+              userId: resolvedUser.id,
+            },
+          },
+          select: {
+            id: true,
+            issuer: true,
+            subject: true,
           },
         });
+
+        if (existingProviderIdentity) {
+          await tx.authIdentity.update({
+            where: { id: existingProviderIdentity.id },
+            data: {
+              issuer,
+              subject,
+              emailAtLink: normalizedEmail,
+              lastLoginAt: new Date(),
+            },
+          });
+        } else {
+          await tx.authIdentity.create({
+            data: {
+              userId: resolvedUser.id,
+              provider: OIDC_PROVIDER_KEY,
+              issuer,
+              subject,
+              emailAtLink: normalizedEmail,
+              lastLoginAt: new Date(),
+            },
+          });
+        }
 
         if (adminGroups.size > 0) {
           const nextRole = shouldBeAdmin ? "ADMIN" : "USER";
