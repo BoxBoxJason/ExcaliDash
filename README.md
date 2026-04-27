@@ -37,6 +37,13 @@ A self-hosted dashboard and organizer for [Excalidraw](https://github.com/excali
 </details>
 
 <details>
+<summary>Version history and restore</summary>
+
+Automatically retain recent drawing snapshots, preview past versions from the editor, and restore a previous state when needed.
+
+</details>
+
+<details>
 <summary>(Optional) Multi User Authentication, OIDC Support</summary>
 
 ### Sign in with OIDC
