@@ -33,7 +33,7 @@ const ExcalidrawEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
   const [accessLevel, setAccessLevel] = useState<
     "none" | "view" | "edit" | "owner"
@@ -368,6 +368,7 @@ const ExcalidrawEditor: React.FC = () => {
         onCloseShare={() => setIsShareOpen(false)}
         onHistoryOpen={() => setIsHistoryOpen(true)}
         onToggleAutoHide={handleToggleAutoHide}
+        onToggleTheme={toggleTheme}
       />
       <EditorDialogs
         drawingId={id}

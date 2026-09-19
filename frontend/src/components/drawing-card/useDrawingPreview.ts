@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Drawing, DrawingSummary } from "../../types";
-import { previewHasEmbeddedImages } from "../../utils/previewSvg";
+import {
+  normalizePreviewSvg,
+  previewHasEmbeddedImages,
+} from "../../utils/previewSvg";
 import * as api from "../../api";
 
 export type HydratedDrawingData = {
@@ -41,7 +44,7 @@ export const useDrawingPreview = (
   loadPreview = true,
 ) => {
   const [previewSvg, setPreviewSvg] = useState<string | null>(
-    drawing.preview ?? null,
+    normalizePreviewSvg(drawing.preview) ?? null,
   );
   const [fullData, setFullData] = useState<HydratedDrawingData | null>(null);
 
@@ -90,7 +93,7 @@ export const useDrawingPreview = (
 
   useEffect(() => {
     let cancelled = false;
-    setPreviewSvg(drawing.preview ?? null);
+    setPreviewSvg(normalizePreviewSvg(drawing.preview) ?? null);
     if (drawing.preview) {
       return;
     }
@@ -129,6 +132,7 @@ export const useDrawingPreview = (
           ),
           appState: {
             ...data.appState,
+            exportWithDarkMode: false,
             exportBackground: true,
             viewBackgroundColor: data.appState.viewBackgroundColor || "#ffffff",
           },
@@ -137,7 +141,7 @@ export const useDrawingPreview = (
         });
 
         if (cancelled) return;
-        const previewHtml = svg.outerHTML;
+        const previewHtml = normalizePreviewSvg(svg.outerHTML) || svg.outerHTML;
         setPreviewSvg(previewHtml);
         onPreviewGeneratedRef.current?.(drawing.id, previewHtml);
       } catch (e) {

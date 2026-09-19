@@ -2,6 +2,38 @@ import { describe, expect, it } from "vitest";
 import { normalizePreviewSvg, previewHasEmbeddedImages } from "../previewSvg";
 
 describe("normalizePreviewSvg", () => {
+  it("removes legacy dark export filters without erasing white shapes", () => {
+    const result = normalizePreviewSvg(
+      '<svg filter="invert(93%) hue-rotate(180deg)"><rect fill="white"/><use filter="invert(100%) hue-rotate(180deg) saturate(1.25)"/></svg>',
+    );
+    expect(result).not.toContain("filter=");
+    expect(result).toContain('fill="white"');
+    expect(normalizePreviewSvg('<svg filter="url(#custom)"/>')).toContain(
+      'filter="url(#custom)"',
+    );
+  });
+
+  it("counter-filters raster uses but lets embedded SVGs follow the scene theme", () => {
+    const result = normalizePreviewSvg(
+      '<svg><defs><symbol id="photo"><image href="data:image/png;base64,AAAA"/></symbol><symbol id="vector"><image href="data:image/svg+xml;base64,AAAA"/></symbol></defs><use href="#photo"/><use href="#vector"/></svg>',
+    )!;
+    const doc = new DOMParser().parseFromString(result, "image/svg+xml");
+    expect(
+      doc
+        .querySelector('use[href="#photo"]')
+        ?.getAttribute("data-preview-raster"),
+    ).toBe("true");
+    expect(
+      doc
+        .querySelector('use[href="#vector"]')
+        ?.hasAttribute("data-preview-raster"),
+    ).toBe(false);
+    expect(
+      doc.querySelector("defs image")?.hasAttribute("data-preview-raster"),
+    ).toBe(false);
+    expect(normalizePreviewSvg(result)).toBe(result);
+  });
+
   it("adds viewBox from background rect when missing", () => {
     const raw = [
       '<svg width="1456.7890625" height="1213.81640625">',

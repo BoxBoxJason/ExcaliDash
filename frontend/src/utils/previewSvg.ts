@@ -112,6 +112,32 @@ export const normalizePreviewSvg = (
 
     maybeRepairFlattenedImagePreview(svg as unknown as SVGSVGElement);
 
+    // Match Excalidraw's SVG exporter, but let the app's theme own presentation.
+    // Strip its known legacy export filters to avoid applying dark mode twice.
+    if (svg.getAttribute("filter") === "invert(93%) hue-rotate(180deg)") {
+      svg.removeAttribute("filter");
+    }
+    for (const node of svg.querySelectorAll("use, image")) {
+      if (
+        node.getAttribute("filter") ===
+        "invert(100%) hue-rotate(180deg) saturate(1.25)"
+      )
+        node.removeAttribute("filter");
+      const href =
+        node.getAttribute("href") || node.getAttribute("xlink:href") || "";
+      const image =
+        node.tagName.toLowerCase() === "image"
+          ? node
+          : href.startsWith("#")
+            ? doc.getElementById(href.slice(1))?.querySelector("image")
+            : null;
+      const source =
+        image?.getAttribute("href") || image?.getAttribute("xlink:href") || "";
+      if (/^data:image\/(?!svg\+xml)/i.test(source) && !node.closest("defs")) {
+        node.setAttribute("data-preview-raster", "true");
+      }
+    }
+
     return svg.outerHTML;
   } catch {
     return preview;

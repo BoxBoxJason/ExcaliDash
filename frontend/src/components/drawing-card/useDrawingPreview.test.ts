@@ -54,7 +54,9 @@ describe("useDrawingPreview", () => {
     );
 
     await waitFor(() => {
-      expect(result.current.previewSvg).toBe("<svg>inline</svg>");
+      expect(result.current.previewSvg).toBe(
+        '<svg preserveAspectRatio="xMidYMid meet">inline</svg>',
+      );
     });
     expect(getDrawingPreviewMock).not.toHaveBeenCalled();
     expect(getDrawingMock).not.toHaveBeenCalled();

@@ -309,6 +309,7 @@ export const useEditorPersistence = ({
         appState: {
           ...appState,
           exportBackground: true,
+          exportWithDarkMode: false,
           viewBackgroundColor: appState.viewBackgroundColor || "#ffffff",
         },
         files: currentFiles,

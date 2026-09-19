@@ -330,7 +330,8 @@ export const UIOptions = {
     saveToActiveFile: false,
     loadScene: false,
     export: false,
-    toggleTheme: true,
+    // App preference owns the theme; disable Excalidraw's independent action.
+    toggleTheme: false,
   },
 } as const;
 

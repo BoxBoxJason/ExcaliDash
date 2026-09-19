@@ -63,8 +63,11 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
   const [shouldLoadPreview, setShouldLoadPreview] = useState(
     Boolean(drawing.preview),
   );
-  const { previewSvg, hasEmbeddedImages, buildExportDrawing } =
-    useDrawingPreview(drawing, onPreviewGenerated, shouldLoadPreview);
+  const { previewSvg, buildExportDrawing } = useDrawingPreview(
+    drawing,
+    onPreviewGenerated,
+    shouldLoadPreview,
+  );
 
   useEffect(() => {
     if (drawing.preview) {
@@ -208,8 +211,7 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
             <div
               className={clsx(
                 "w-full h-full p-4 sm:p-5 flex items-center justify-center [&>svg]:w-auto [&>svg]:h-auto [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:drop-shadow-xs transition-transform duration-550",
-                !hasEmbeddedImages &&
-                  "dark:[&>svg]:invert dark:[&>svg_rect[fill='white']]:opacity-0 dark:[&>svg_rect[fill='#ffffff']]:opacity-0",
+                "drawing-preview",
               )}
               dangerouslySetInnerHTML={{ __html: previewSvg }}
             />
