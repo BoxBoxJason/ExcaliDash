@@ -5,6 +5,11 @@ export default defineConfig({
   description: "A self-hosted home for your Excalidraw drawings.",
   cleanUrls: true,
   lastUpdated: true,
+  vite: {
+    server: {
+      allowedHosts: ["small-lake-3h.v3c.dev"],
+    },
+  },
   head: [
     ["meta", { name: "theme-color", content: "#6965db" }],
     ["link", { rel: "icon", href: "/mark.svg", type: "image/svg+xml" }],
