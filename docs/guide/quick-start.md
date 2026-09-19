@@ -1,6 +1,6 @@
 # Quick start
 
-The fastest way to try ExcaliDash is with Docker Compose. The production Compose file runs the frontend and backend together and stores application data in a named volume.
+Run ExcaliDash with Docker Compose.
 
 ## Prerequisites
 
@@ -18,10 +18,10 @@ cd ExcaliDash
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-Open `http://localhost:6767`. On a new local-auth installation, the first-run flow walks you through creating the initial administrator.
+Open `http://localhost:6767` and create the administrator account.
 
 ::: tip Data persists between restarts
-SQLite data and generated secrets live in the `backend-data` Docker volume. Running `docker compose down` keeps that volume. Do not add `-v` unless you intend to delete the stored data.
+SQLite data and generated secrets are stored in `backend-data`. The `down` command preserves this volume; adding `-v` deletes it.
 :::
 
 ## Check the services
@@ -31,7 +31,7 @@ docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f
 ```
 
-Both services include health checks. The frontend listens on port `6767`; the backend stays inside the Compose network and is reached through the frontend proxy.
+Both services have health checks. Port `6767` serves the frontend and proxies backend requests.
 
 ## Stop the stack
 
@@ -39,4 +39,4 @@ Both services include health checks. The frontend listens on port `6767`; the ba
 docker compose -f docker-compose.prod.yml down
 ```
 
-Next, review [first-run choices](/guide/first-run) or prepare a more durable [Docker deployment](/deploy/docker).
+Next: [First run](/guide/first-run) or [Docker deployment](/deploy/docker).

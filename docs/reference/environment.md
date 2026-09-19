@@ -1,6 +1,6 @@
 # Environment reference
 
-This page is a map of the settings most deployments touch. The typed registry under `backend/src/config/registry/` remains the source of truth for defaults, validation, and the complete variable set.
+Common settings are listed below. See `backend/src/config/registry/` for all variables, defaults, and validation rules.
 
 ## Core server
 
@@ -33,7 +33,7 @@ This page is a map of the settings most deployments touch. The typed registry un
 
 ## OpenID Connect
 
-The core OIDC settings are `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and `OIDC_REDIRECT_URI`. Set `AUTH_MODE` to `hybrid` or `oidc_enforced` to expose the provider flow.
+Set `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and `OIDC_REDIRECT_URI`. Set `AUTH_MODE` to `hybrid` or `oidc_enforced`.
 
 The redirect URI must exactly match the value registered with the provider and must use HTTPS in production.
 

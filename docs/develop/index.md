@@ -1,6 +1,6 @@
 # Local development
 
-ExcaliDash has separate React/Vite and Node/Express applications. Run them in separate terminals so each process has clear logs and shutdown behavior.
+Run the backend and frontend in separate terminals.
 
 ## Requirements
 
@@ -16,7 +16,7 @@ From the repository root:
 npm run install:all
 ```
 
-This installs the backend, frontend, and browser-test workspaces. Root tooling is installed with `npm install` when needed.
+This installs backend, frontend, and browser-test dependencies. Run `npm install` for root tooling.
 
 ## Configure the apps
 
@@ -25,7 +25,7 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-Review the files before adding local overrides. The default frontend uses `/api`, which Vite proxies to the local backend.
+Vite proxies `/api` requests to the backend.
 
 ## Start the backend
 
@@ -34,7 +34,7 @@ cd backend
 npm run dev
 ```
 
-The backend prepares the local database before starting its watched process on port `8000`.
+The backend initializes the database and listens on port `8000`.
 
 ## Start the frontend
 
@@ -54,7 +54,7 @@ npm test
 npm run check
 ```
 
-Use focused workspace commands while iterating:
+To check one workspace:
 
 ```bash
 npm --prefix frontend test
@@ -68,4 +68,4 @@ npm --prefix frontend run lint
 npm run docs:dev
 ```
 
-VitePress watches Markdown, configuration, and theme files and updates the browser immediately.
+VitePress reloads the browser when files change.

@@ -4,10 +4,10 @@ layout: home
 hero:
   name: "ExcaliDash"
   text: "Your drawings. Your server."
-  tagline: Organize, search, share, and collaborate on Excalidraw drawings from one self-hosted workspace.
+  tagline: A self-hosted workspace for your Excalidraw drawings.
   image:
-    src: /images/logo.png
-    alt: ExcaliDash logo
+    src: /images/workspace.png
+    alt: ExcaliDash dashboard with drawings organized into collections
   actions:
     - theme: brand
       text: Get started
@@ -18,44 +18,33 @@ hero:
 
 features:
   - icon: "01"
-    title: One home for every drawing
-    details: Search, sort, group, duplicate, archive, import, and export your work from a focused dashboard.
+    title: Organize
+    details: Group drawings into collections. Search and sort your workspace.
   - icon: "02"
-    title: Collaboration built in
-    details: Edit together in real time and share individual drawings or entire collections with clear access controls.
+    title: Collaborate
+    details: Edit together in real time. Share drawings and collections.
   - icon: "03"
-    title: Self-hosted by design
-    details: Run with Docker Compose, choose SQLite or PostgreSQL, and keep control of authentication and storage.
+    title: Self-host
+    details: Deploy with Docker Compose. Use SQLite or PostgreSQL.
   - icon: "04"
-    title: History you can trust
-    details: Retain drawing snapshots, inspect earlier versions, and restore work when you need to rewind.
+    title: Restore
+    details: Browse drawing history and restore earlier versions.
   - icon: "05"
-    title: Your identity provider
-    details: Use local accounts, OIDC, a hybrid of both, or a deliberately isolated no-auth mode.
+    title: Sign in
+    details: Use local accounts, OpenID Connect, or both.
   - icon: "06"
     title: Portable data
-    details: Back up and move drawings with an archive format built around plain Excalidraw files.
+    details: Import, export, and back up your Excalidraw files.
 ---
-
-<section class="product-preview">
-  <p class="hand-note">your drawings, finally organized ↓</p>
-  <div class="product-frame">
-    <img src="/images/workspace.png" alt="ExcaliDash in dark mode, with drawing previews organized into collections" width="3200" height="2100" />
-  </div>
-</section>
 
 <section class="product-preview">
   <p class="hand-note">same canvas, whole team ↓</p>
   <div class="product-frame">
     <img src="/images/collaboration.png" alt="Four collaborators reviewing a deployment diagram, with live named cursors and presence avatars" width="3200" height="2100" loading="lazy" />
   </div>
-  <p class="preview-caption">Real drawings. Real sessions. Organize your workspace, then work together on the same canvas.</p>
-  <p class="preview-credits">Sample drawings: <a href="/images/CREDITS.txt">licenses and attribution</a> · <a href="/images/sources.json">individual sources</a></p>
 </section>
 
-## Start where you are
-
-Whether you are trying ExcaliDash on a laptop or preparing a durable deployment, the path stays small and explicit.
+## Get started
 
 <div class="quick-links">
   <a href="/guide/quick-start">Run it with Docker →</a>

@@ -154,12 +154,18 @@ body {
 }
 
 .VPHero .image-container {
+  width: 100%;
   transform: none;
 }
 
 .VPHero .image-src {
-  width: 270px;
-  height: 270px;
+  width: 600px;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 15%);
   filter: none;
 }
 
@@ -354,8 +360,8 @@ body {
   }
 
   .VPHero .image-src {
-    width: 180px;
-    height: 180px;
+    width: 100%;
+    height: auto;
   }
 
   .product-preview {

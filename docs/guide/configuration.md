@@ -1,6 +1,6 @@
 # Configuration
 
-ExcaliDash is configured through environment variables. The backend registry in `backend/src/config/registry/` is the canonical definition; `backend/.env.example` is generated from it.
+Configure ExcaliDash with environment variables. `backend/.env.example` lists the backend settings.
 
 ## Local development
 
@@ -11,11 +11,11 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-The committed defaults are suitable for local development. Add secrets only to the untracked `.env` files.
+Use the defaults for local development. Keep secrets in untracked `.env` files.
 
 ## Docker Compose
 
-Compose substitutes values from your shell or a root `.env` file. For example:
+Set variables in your shell or the root `.env` file:
 
 ```dotenv
 EXCALIDASH_TAG=latest
@@ -24,7 +24,7 @@ JWT_SECRET=replace-with-a-long-random-value
 CSRF_SECRET=replace-with-a-different-random-value
 ```
 
-Then start the stack normally:
+Start the services:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
@@ -38,4 +38,4 @@ docker compose -f docker-compose.prod.yml up -d
 - Enable `TRUST_PROXY` only when a trusted proxy replaces client-supplied forwarding headers.
 - Keep database and uploaded-file storage persistent across container replacement.
 
-See the [environment reference](/reference/environment) for the most important settings and their source of truth.
+See the [environment reference](/reference/environment).

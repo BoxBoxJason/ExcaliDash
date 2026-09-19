@@ -1,8 +1,8 @@
 # Deploy with Docker Compose
 
-The supplied production Compose file uses published frontend and backend images and a persistent SQLite volume. It is a strong starting point for a single-host deployment.
+`docker-compose.prod.yml` runs the frontend, backend, and a persistent SQLite volume.
 
-## Pin an image channel
+## Select an image version
 
 The `EXCALIDASH_TAG` value selects both images:
 
@@ -11,13 +11,13 @@ EXCALIDASH_TAG=latest docker compose -f docker-compose.prod.yml pull
 EXCALIDASH_TAG=latest docker compose -f docker-compose.prod.yml up -d
 ```
 
-Pin a numbered release when you need repeatable rollouts. Never run frontend and backend images from different versions.
+Pin a release for repeatable deployments. Use the same version for both images.
 
-## Put a proxy in front
+## Configure HTTPS
 
-Route one HTTPS origin to the frontend container on port `8080` inside its network, or to host port `6767` with the supplied mapping. The frontend proxy forwards API and realtime traffic to the backend.
+Route HTTPS traffic to container port `8080` or host port `6767`. The frontend proxies API and real-time traffic to the backend.
 
-When enabling proxy trust, set it to the known hop count rather than accepting arbitrary forwarding headers:
+Set `TRUST_PROXY` to the number of trusted proxy hops:
 
 ```yaml
 environment:
@@ -27,7 +27,7 @@ environment:
 
 ## Persist and back up data
 
-The default SQLite database lives in the `backend-data` volume. Back up that volume while writes are quiesced, or enable the built-in scheduled backup settings and mount a separate backup volume.
+Back up `backend-data` with writes paused. For scheduled backups, mount a separate volume:
 
 ```yaml
 environment:
@@ -39,7 +39,7 @@ volumes:
   - backup-data:/app/backups
 ```
 
-Test restoration before relying on a backup process.
+Test restoring a backup.
 
 ## Upgrade
 

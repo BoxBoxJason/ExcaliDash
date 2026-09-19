@@ -1,18 +1,18 @@
 # First run
 
-ExcaliDash starts with local authentication by default. The initial setup flow creates the first administrator before the dashboard opens.
+Local authentication is enabled by default.
 
 ## Choose an authentication mode
 
-| Mode            | Best for                                                            |
-| --------------- | ------------------------------------------------------------------- |
-| `local`         | A straightforward deployment with ExcaliDash-managed accounts       |
-| `hybrid`        | Local accounts alongside an OpenID Connect provider                 |
-| `oidc_enforced` | Organizations that require identity-provider sign-in                |
-| `disabled`      | Isolated, trusted environments where every visitor is the same user |
+| Mode            | Best for                                        |
+| --------------- | ----------------------------------------------- |
+| `local`         | ExcaliDash accounts                             |
+| `hybrid`        | Local accounts and OpenID Connect               |
+| `oidc_enforced` | OpenID Connect only                             |
+| `disabled`      | One shared identity; isolated environments only |
 
 ::: danger Do not expose disabled authentication publicly
-With `AUTH_MODE=disabled`, requests share a single local identity. Use it only behind a trusted boundary.
+`AUTH_MODE=disabled` gives every visitor the same identity and access.
 :::
 
 ## Create the administrator
@@ -20,19 +20,19 @@ With `AUTH_MODE=disabled`, requests share a single local identity. Use it only b
 For the default `local` mode:
 
 1. Open the frontend URL.
-2. Follow the setup prompt to create the first administrator.
+2. Create the administrator account.
 3. Sign in with that account.
-4. Create additional users from the administration area when needed.
+4. Add users in **Admin**.
 
-For OIDC deployments, configure the provider before the first sign-in. `OIDC_FIRST_USER_ADMIN=true` grants administrator access to the first provisioned OIDC user.
+For OIDC, configure the provider first. Set `OIDC_FIRST_USER_ADMIN=true` to make the first OIDC user an administrator.
 
 ## Your workspace
 
-Create drawings from the dashboard and group related work into collections. Search and sort the grid to find a diagram, then open it in the editor.
+Create drawings and organize them into collections.
 
 ![Dark-mode drawing dashboard with collections](/images/workspace.png)
 
-Use **Share** in the editor to grant access. Participants can work on the same canvas, with live cursors and presence indicators showing who is there.
+Select **Share** to grant access. Collaborators appear as avatars and named cursors.
 
 ![Four live sessions reviewing a deployment diagram](/images/collaboration.png)
 
@@ -48,4 +48,4 @@ Before exposing ExcaliDash beyond a local machine:
 - Persist the database and test a restore procedure.
 - Keep frontend and backend image tags aligned.
 
-Continue with [configuration](/guide/configuration) for the environment-file pattern.
+See [Configuration](/guide/configuration).
