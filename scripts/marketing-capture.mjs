@@ -410,7 +410,7 @@ try {
       JSON.stringify({
         dashboardSortField: "name",
         dashboardSortDirection: "asc",
-        theme: "light",
+        theme: "dark",
       }),
     ),
   );
@@ -454,7 +454,7 @@ try {
       JSON.stringify({
         dashboardSortField: "name",
         dashboardSortDirection: "asc",
-        theme: "light",
+        theme: "dark",
       }),
     ),
   );
