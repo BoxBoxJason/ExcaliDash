@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "../../api";
 import { compressExcalidrawFiles } from "../../utils/imageCompression";
 import { useEditorPersistence } from "./useEditorPersistence";
+import { toast } from "sonner";
 
 vi.mock("@excalidraw/excalidraw", () => ({ exportToSvg: vi.fn() }));
 vi.mock("../../api", () => ({
@@ -51,6 +52,57 @@ const params = (refs: ReturnType<typeof makeRefs>) => ({
 });
 
 const els = [{ id: "a", type: "rectangle", version: 1 }];
+
+describe("concurrent autosaves", () => {
+  it("reconciles repeated conflicts without showing a premature refresh error", async () => {
+    vi.clearAllMocks();
+    const conflict = { response: { status: 409 } };
+    vi.mocked(api.isAxiosError).mockReturnValue(true);
+    vi.mocked(api.updateDrawing)
+      .mockRejectedValueOnce(conflict)
+      .mockRejectedValueOnce(conflict)
+      .mockResolvedValue({ version: 4 } as any);
+    vi.mocked(api.getDrawing)
+      .mockResolvedValueOnce({
+        version: 2,
+        elements: [{ id: "remote", version: 1 }],
+        files: {},
+      } as any)
+      .mockResolvedValueOnce({
+        version: 3,
+        elements: [{ id: "remote", version: 2 }],
+        files: {},
+      } as any);
+    const refs = makeRefs();
+    const { result } = renderHook(() => useEditorPersistence(params(refs)));
+    try {
+      await act(async () => {
+        await result.current.enqueueSceneSave(
+          "d1",
+          els,
+          {},
+          {},
+          { suppressErrors: false },
+        );
+      });
+      expect(api.getDrawing).toHaveBeenCalledTimes(2);
+      expect(api.updateDrawing).toHaveBeenLastCalledWith(
+        "d1",
+        expect.objectContaining({
+          version: 3,
+          elements: expect.arrayContaining([
+            expect.objectContaining({ id: "a" }),
+            expect.objectContaining({ id: "remote", version: 2 }),
+          ]),
+        }),
+      );
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(refs.currentDrawingVersion.current).toBe(4);
+    } finally {
+      vi.mocked(api.isAxiosError).mockReturnValue(false);
+    }
+  });
+});
 
 describe("useEditorPersistence autosave indicator", () => {
   const updateDrawing = vi.mocked(api.updateDrawing);

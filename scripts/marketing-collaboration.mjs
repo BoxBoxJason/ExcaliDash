@@ -74,7 +74,16 @@ export async function captureCollaboration(browser, base, gallery, manifest) {
           peers?.size === 3 && [...peers.values()].every((peer) => peer.pointer)
         );
       });
-      await pages[0].waitForTimeout(400);
+      // Give autosaves time to complete; fail visibly instead of publishing
+      // a capture with an error toast or masking an actual persistence bug.
+      await pages[0].waitForTimeout(2200);
+      for (const page of pages) {
+        if (
+          await page.locator('[data-sonner-toast][data-type="error"]').count()
+        ) {
+          throw new Error(`Collaboration capture ${name} has an error toast`);
+        }
+      }
       await pages[0].screenshot({
         path: resolve(gallery, `${name}.png`),
         animations: "disabled",

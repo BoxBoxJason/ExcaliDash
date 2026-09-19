@@ -40,8 +40,17 @@ features:
 <section class="product-preview">
   <p class="hand-note">your drawings, finally organized ↓</p>
   <div class="product-frame">
-    <img src="/images/dashboard.webp" alt="The ExcaliDash drawings dashboard" />
+    <img src="/images/workspace.png" alt="ExcaliDash in dark mode, with drawing previews organized into collections" width="3200" height="2100" />
   </div>
+</section>
+
+<section class="product-preview">
+  <p class="hand-note">same canvas, whole team ↓</p>
+  <div class="product-frame">
+    <img src="/images/collaboration.png" alt="Four collaborators reviewing a deployment diagram, with live named cursors and presence avatars" width="3200" height="2100" loading="lazy" />
+  </div>
+  <p class="preview-caption">Real drawings. Real sessions. Organize your workspace, then work together on the same canvas.</p>
+  <p class="preview-credits">Sample drawings: <a href="/images/CREDITS.txt">licenses and attribution</a> · <a href="/images/sources.json">individual sources</a></p>
 </section>
 
 ## Start where you are

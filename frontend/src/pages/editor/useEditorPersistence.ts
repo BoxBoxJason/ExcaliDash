@@ -193,7 +193,13 @@ export const useEditorPersistence = ({
           }
         } catch (err) {
           if (api.isAxiosError(err) && err.response?.status === 409) {
-            if (attempt === 0) {
+            if (attempt < 4) {
+              // Concurrent editors can collide again after reconciliation.
+              // Stagger retries, but always merge against the latest version
+              // rather than overwriting another participant's changes.
+              await new Promise((resolve) =>
+                setTimeout(resolve, 100 * 2 ** attempt + Math.random() * 150),
+              );
               const reconciled = await reloadAndReconcile(
                 refs,
                 drawingId,
@@ -201,7 +207,7 @@ export const useEditorPersistence = ({
                 filesToSave,
               );
               await persistScene(
-                1,
+                attempt + 1,
                 reconciled.elements,
                 reconciled.files,
                 true,

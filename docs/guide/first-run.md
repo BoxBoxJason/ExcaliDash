@@ -26,6 +26,18 @@ For the default `local` mode:
 
 For OIDC deployments, configure the provider before the first sign-in. `OIDC_FIRST_USER_ADMIN=true` grants administrator access to the first provisioned OIDC user.
 
+## Your workspace
+
+Create drawings from the dashboard and group related work into collections. Search and sort the grid to find a diagram, then open it in the editor.
+
+![Dark-mode drawing dashboard with collections](/images/workspace.png)
+
+Use **Share** in the editor to grant access. Participants can work on the same canvas, with live cursors and presence indicators showing who is there.
+
+![Four live sessions reviewing a deployment diagram](/images/collaboration.png)
+
+[Sample drawing credits](/images/CREDITS.txt).
+
 ## Protect the instance
 
 Before exposing ExcaliDash beyond a local machine:

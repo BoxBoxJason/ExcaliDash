@@ -262,6 +262,18 @@ body {
   border-radius: 8px;
 }
 
+.preview-caption {
+  margin-top: 28px !important;
+  color: var(--vp-c-text-2);
+  text-align: center;
+}
+
+.preview-credits {
+  font-size: 12px;
+  color: var(--vp-c-text-3);
+  text-align: center;
+}
+
 .vp-doc h1,
 .vp-doc h2,
 .vp-doc h3 {

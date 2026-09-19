@@ -399,6 +399,9 @@ try {
       url.startsWith("/editor") ? 2 : height - 5,
     );
     await page.waitForTimeout(200);
+    if (await page.locator('[data-sonner-toast][data-type="error"]').count()) {
+      throw new Error(`Capture ${name} has an error toast`);
+    }
     await page.screenshot({
       path: resolve(gallery, `${name}.png`),
       animations: "disabled",
