@@ -20,10 +20,8 @@ frontend/coverage
 frontend/test-results
 frontend/playwright-report
 .github
-docs
 e2e
 local
 oidc
-readme-assets
 scripts
 docker-compose*.yml

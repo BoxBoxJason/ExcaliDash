@@ -10,7 +10,7 @@ import {
 /**
  * E2E Tests for Drawing Creation and Editing
  *
- * Tests the persistent storage feature mentioned in README:
+ * Covers drawing persistence behavior:
  * - Create new drawings
  * - Edit drawing names
  * - Delete drawings

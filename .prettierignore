@@ -11,6 +11,4 @@ backend/prisma/*.db*
 frontend/public/excalidraw-assets
 frontend/public/excalidraw-assets-dev
 frontend/public/fonts
-readme-assets
-docs/CONFIGURATION.md
 LICENSE

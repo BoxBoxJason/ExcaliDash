@@ -4,7 +4,7 @@ import { createDrawing, deleteDrawing, getDrawing } from "./helpers/api";
 /**
  * E2E Tests for Real-time Collaboration
  *
- * Tests the real-time collaboration feature mentioned in README:
+ * Covers real-time collaboration behavior:
  * - Multiple users can edit drawings simultaneously
  * - Cursor presence is shared between users
  * - Changes sync between users in real-time

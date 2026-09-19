@@ -4,7 +4,7 @@ import { createDrawing, deleteDrawing } from "./helpers/api";
 /**
  * E2E Tests for Search and Sort functionality
  *
- * Tests the search drawings feature mentioned in README:
+ * Covers search and sorting behavior:
  * - Search by drawing name
  * - Sort by name, created date, modified date
  * - Clear search
