@@ -16,6 +16,9 @@
     "format:check": "prettier --check .",
     "check:version": "node scripts/check-version.cjs",
     "check:env": "node scripts/check-env-boundary.cjs",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "check": "npm run format:check && npm run lint && npm run check:version && npm run check:env"
   },
   "devDependencies": {
@@ -23,6 +26,7 @@
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "prettier": "^3.9.0",
-    "typescript-eslint": "^8.46.3"
+    "typescript-eslint": "^8.46.3",
+    "vitepress": "^1.6.4"
   }
 }

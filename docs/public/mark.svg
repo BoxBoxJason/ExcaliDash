@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ExcaliDash mark">
+  <rect width="64" height="64" rx="18" fill="#6965db"/>
+  <path d="M18 21.5c0-2 1.6-3.5 3.5-3.5h21c2 0 3.5 1.6 3.5 3.5v21c0 2-1.6 3.5-3.5 3.5h-21c-2 0-3.5-1.6-3.5-3.5v-21Z" fill="#fff" fill-opacity=".16" stroke="#fff" stroke-width="3"/>
+  <path d="m24 38 7-13 4.5 8 4.5-3-1 8H24Z" fill="#fff" stroke="#fff" stroke-linejoin="round" stroke-width="2.5"/>
+</svg>
