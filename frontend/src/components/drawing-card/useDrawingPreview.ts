@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Drawing, DrawingSummary } from "../../types";
 import {
   normalizePreviewSvg,
+  isDefaultPreviewBackground,
   previewHasEmbeddedImages,
 } from "../../utils/previewSvg";
 import * as api from "../../api";
@@ -133,7 +134,9 @@ export const useDrawingPreview = (
           appState: {
             ...data.appState,
             exportWithDarkMode: false,
-            exportBackground: true,
+            exportBackground: !isDefaultPreviewBackground(
+              data.appState.viewBackgroundColor,
+            ),
             viewBackgroundColor: data.appState.viewBackgroundColor || "#ffffff",
           },
           files: data.files || {},

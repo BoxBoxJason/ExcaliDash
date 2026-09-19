@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import * as api from "../../api";
 import { reloadAndReconcile } from "./reconcileSave";
 import { compressExcalidrawFiles } from "../../utils/imageCompression";
+import { isDefaultPreviewBackground } from "../../utils/previewSvg";
 import {
   applyUploadedFileRefs,
   getFilesDelta,
@@ -308,7 +309,9 @@ export const useEditorPersistence = ({
         elements: normalizedSnapshot,
         appState: {
           ...appState,
-          exportBackground: true,
+          exportBackground: !isDefaultPreviewBackground(
+            appState.viewBackgroundColor,
+          ),
           exportWithDarkMode: false,
           viewBackgroundColor: appState.viewBackgroundColor || "#ffffff",
         },

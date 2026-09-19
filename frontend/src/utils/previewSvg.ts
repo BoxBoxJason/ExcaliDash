@@ -1,3 +1,6 @@
+export const isDefaultPreviewBackground = (color?: string | null): boolean =>
+  !color || ["white", "#fff", "#ffffff"].includes(color.trim().toLowerCase());
+
 const parseDimension = (value: string | null): number | null => {
   if (!value) return null;
   const parsed = Number.parseFloat(value);
@@ -111,6 +114,34 @@ export const normalizePreviewSvg = (
     }
 
     maybeRepairFlattenedImagePreview(svg as unknown as SVGSVGElement);
+
+    // Excalidraw puts the canvas rect before all scene artwork. Only remove
+    // its default white fill, never white shapes or explicitly colored canvases.
+    const firstDrawable = Array.from(svg.children).find(
+      (node) =>
+        !["metadata", "defs", "style", "title", "desc"].includes(
+          node.tagName.toLowerCase(),
+        ),
+    );
+    const bounds = parseViewBox(svg.getAttribute("viewBox"));
+    if (
+      firstDrawable?.tagName.toLowerCase() === "rect" &&
+      bounds &&
+      firstDrawable.hasAttribute("fill") &&
+      isDefaultPreviewBackground(firstDrawable.getAttribute("fill")) &&
+      firstDrawable.getAttribute("x") === "0" &&
+      firstDrawable.getAttribute("y") === "0" &&
+      isNear(
+        parseDimension(firstDrawable.getAttribute("width")) ?? -1,
+        bounds.width,
+      ) &&
+      isNear(
+        parseDimension(firstDrawable.getAttribute("height")) ?? -1,
+        bounds.height,
+      )
+    ) {
+      firstDrawable.setAttribute("fill", "transparent");
+    }
 
     // Match Excalidraw's SVG exporter, but let the app's theme own presentation.
     // Strip its known legacy export filters to avoid applying dark mode twice.

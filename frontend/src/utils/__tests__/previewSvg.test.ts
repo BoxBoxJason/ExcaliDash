@@ -2,6 +2,24 @@ import { describe, expect, it } from "vitest";
 import { normalizePreviewSvg, previewHasEmbeddedImages } from "../previewSvg";
 
 describe("normalizePreviewSvg", () => {
+  it("makes only the default canvas transparent, preserving white artwork", () => {
+    const result = normalizePreviewSvg(
+      '<svg viewBox="0 0 100 80"><defs/><rect x="0" y="0" width="100" height="80" fill="#ffffff"/><g><rect width="30" height="20" fill="white"/></g></svg>',
+    )!;
+    const doc = new DOMParser().parseFromString(result, "image/svg+xml");
+    expect(doc.querySelector("svg > rect")?.getAttribute("fill")).toBe(
+      "transparent",
+    );
+    expect(doc.querySelector("g > rect")?.getAttribute("fill")).toBe("white");
+  });
+
+  it.each(["#000000", "#ffec99"])("preserves a custom %s canvas", (color) => {
+    expect(
+      normalizePreviewSvg(
+        `<svg viewBox="0 0 100 80"><rect x="0" y="0" width="100" height="80" fill="${color}"/></svg>`,
+      ),
+    ).toContain(`fill="${color}"`);
+  });
   it("removes legacy dark export filters without erasing white shapes", () => {
     const result = normalizePreviewSvg(
       '<svg filter="invert(93%) hue-rotate(180deg)"><rect fill="white"/><use filter="invert(100%) hue-rotate(180deg) saturate(1.25)"/></svg>',

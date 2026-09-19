@@ -1,5 +1,6 @@
 import { chromium } from "../e2e/node_modules/playwright/index.mjs";
 import { buildGallery } from "./marketing-gallery.mjs";
+import { captureCollaboration } from "./marketing-collaboration.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -458,6 +459,9 @@ try {
         theme: "dark",
       }),
     ),
+  );
+  captures.push(
+    ...(await captureCollaboration(browser, base, gallery, manifest)),
   );
   await buildGallery(gallery, captures);
 } finally {
