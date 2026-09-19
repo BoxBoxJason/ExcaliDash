@@ -100,10 +100,6 @@ body {
   letter-spacing: -0.035em;
 }
 
-.VPNavBar.home .title {
-  display: none;
-}
-
 .VPNavBar.home .content {
   flex-grow: 1;
 }
