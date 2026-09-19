@@ -12,10 +12,10 @@ export default defineConfig({
   },
   head: [
     ["meta", { name: "theme-color", content: "#6965db" }],
-    ["link", { rel: "icon", href: "/mark.svg", type: "image/svg+xml" }],
+    ["link", { rel: "icon", href: "/images/logo.png", type: "image/png" }],
   ],
   themeConfig: {
-    logo: { src: "/mark.svg", alt: "ExcaliDash" },
+    logo: { src: "/images/logo.png", alt: "ExcaliDash" },
     nav: [
       { text: "Guide", link: "/guide/quick-start" },
       { text: "Deploy", link: "/deploy/docker" },
