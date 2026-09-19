@@ -182,19 +182,6 @@ docker compose up -d
 
 </details>
 
-## Advanced
-
-The root README keeps the install path short. See
-[advanced deployment and operations](docs/DEPLOYMENT.md) for reverse proxy,
-auth/OIDC, database provider, offline, backup, password policy, and operational
-details.
-
-For the full environment-variable reference, see
-[configuration](docs/CONFIGURATION.md).
-
-For release-candidate validation across multiple local configurations, see the
-[configuration lab](docs/CONFIG_LAB.md).
-
 # Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the supported toolchain and repository-wide checks. Run the backend and frontend in separate terminals so logs and shutdown behavior remain explicit.

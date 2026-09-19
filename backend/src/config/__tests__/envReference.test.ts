@@ -1,11 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
 import { describe, expect, it } from "vitest";
-import { renderConfigDocs, renderEnvExample } from "../generateEnvReference";
+import { renderEnvExample } from "../generateEnvReference";
 import { ENV_REGISTRY } from "../registry";
 
 const ENV_EXAMPLE_PATH = path.resolve(__dirname, "../../../.env.example");
-const DOCS_PATH = path.resolve(__dirname, "../../../../docs/CONFIGURATION.md");
 
 /** Normalize trailing whitespace so line-ending noise never fails the test. */
 const normalize = (text: string): string =>
@@ -18,11 +17,6 @@ describe("generated env reference is fresh", () => {
   it("backend/.env.example matches the registry (run npm run gen:env)", () => {
     const onDisk = fs.readFileSync(ENV_EXAMPLE_PATH, "utf8");
     expect(normalize(onDisk)).toBe(normalize(renderEnvExample()));
-  });
-
-  it("docs/CONFIGURATION.md matches the registry (run npm run gen:env)", () => {
-    const onDisk = fs.readFileSync(DOCS_PATH, "utf8");
-    expect(normalize(onDisk)).toBe(normalize(renderConfigDocs()));
   });
 });
 

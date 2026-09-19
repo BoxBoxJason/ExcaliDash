@@ -24,7 +24,7 @@ services:
       # - OIDC_CLIENT_ID=your-client-id
       # - OIDC_CLIENT_SECRET=your-client-secret
       # - OIDC_REDIRECT_URI=https://excalidash.example.com/api/auth/oidc/callback
-      # Optional scheduled SQLite backups (see docs/DEPLOYMENT.md > Backups).
+      # Optional scheduled SQLite backups.
       # BACKUP_SCHEDULE is a 5- or 6-field cron expression; unset disables it.
       # Uncomment these together with the backup-data volume mount below.
       # - BACKUP_SCHEDULE=0 0 4 * * *

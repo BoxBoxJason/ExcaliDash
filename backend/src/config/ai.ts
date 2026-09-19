@@ -8,7 +8,7 @@ export interface AiChatGptConfig {
    * `client_version` query param sent to the ChatGPT/Codex backend. The backend
    * gates the available model set on this value — a stale version makes models
    * report as unsupported. Self-hosters bump this without a release when models
-   * disappear. See docs/AGENT_API.md.
+   * disappear.
    */
   clientVersion: string;
   /** Public OAuth client id used by the Codex CLI (overridable for resilience). */
