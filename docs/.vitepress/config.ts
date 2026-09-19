@@ -15,6 +15,7 @@ export default defineConfig({
     ["link", { rel: "icon", href: "/images/logo.png", type: "image/png" }],
   ],
   themeConfig: {
+    siteTitle: false,
     logo: { src: "/images/logo.png", alt: "ExcaliDash" },
     nav: [
       { text: "Guide", link: "/guide/quick-start" },
