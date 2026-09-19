@@ -1,4 +1,5 @@
 import { chromium } from "../e2e/node_modules/playwright/index.mjs";
+import { buildGallery } from "./marketing-gallery.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -458,10 +459,7 @@ try {
       }),
     ),
   );
-  await writeFile(
-    resolve(gallery, "index.html"),
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ExcaliDash captures</title><link rel="license" href="CREDITS.txt"><style>body{margin:0;padding:24px;background:#111;display:grid;gap:24px}a{display:block;margin:auto;max-width:1600px;width:100%}img{display:block;width:100%;height:auto}a[href*="mobile"]{max-width:430px}</style></head><body>${captures.map((name) => `<a href="${name}.png"><img src="${name}.png" alt="${name}" loading="lazy"></a>`).join("")}<!-- Source licenses and attribution are included in CREDITS.txt and sources.json. --></body></html>`,
-  );
+  await buildGallery(gallery, captures);
 } finally {
   await browser.close();
 }
