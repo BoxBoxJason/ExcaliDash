@@ -6,8 +6,8 @@
 
 :root {
   --ink: #111113;
-  --paper: #fdfdfb;
-  --paper-muted: #f3f3ef;
+  --paper: #efefed;
+  --paper-muted: #e8e8e5;
   --violet: #6965db;
   --vp-c-brand-1: #5f5bd3;
   --vp-c-brand-2: #4f4bc2;
@@ -15,7 +15,7 @@
   --vp-c-brand-soft: rgba(105, 101, 219, 0.12);
   --vp-c-bg: var(--paper);
   --vp-c-bg-alt: var(--paper-muted);
-  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-elv: #f4f4f1;
   --vp-c-bg-soft: #f6f6f2;
   --vp-c-border: #d7d7d0;
   --vp-c-divider: #deded8;
@@ -37,25 +37,25 @@
 }
 
 .dark {
-  --ink: #f7f7f4;
-  --paper: #0b0b0c;
-  --paper-muted: #121214;
+  --ink: #d8d8dc;
+  --paper: #141416;
+  --paper-muted: #19191c;
   --vp-c-brand-1: #a7a4ff;
   --vp-c-brand-2: #8f8bea;
   --vp-c-brand-3: #7a76dc;
   --vp-c-brand-soft: rgba(143, 139, 234, 0.14);
   --vp-c-bg: var(--paper);
   --vp-c-bg-alt: var(--paper-muted);
-  --vp-c-bg-elv: #101012;
+  --vp-c-bg-elv: #1b1b1e;
   --vp-c-bg-soft: #161619;
   --vp-c-border: #2e2e33;
   --vp-c-divider: #28282c;
   --vp-c-text-1: var(--ink);
   --vp-c-text-2: #adadb6;
   --vp-c-text-3: #85858e;
-  --vp-button-brand-bg: #f7f7f4;
-  --vp-button-brand-border: #f7f7f4;
-  --vp-button-brand-text: #111113;
+  --vp-button-brand-bg: #ccccd2;
+  --vp-button-brand-border: #ccccd2;
+  --vp-button-brand-text: #202024;
   --vp-button-brand-hover-bg: var(--violet);
   --vp-button-brand-hover-border: var(--violet);
   --vp-button-brand-hover-text: #ffffff;
@@ -69,12 +69,12 @@ body {
   background-image:
     linear-gradient(
       to right,
-      color-mix(in srgb, var(--vp-c-text-1) 4%, transparent) 1px,
+      color-mix(in srgb, var(--vp-c-text-1) 2%, transparent) 1px,
       transparent 1px
     ),
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--vp-c-text-1) 4%, transparent) 1px,
+      color-mix(in srgb, var(--vp-c-text-1) 2%, transparent) 1px,
       transparent 1px
     );
   background-size: 32px 32px;
@@ -98,6 +98,14 @@ body {
 .VPNavBarTitle .title {
   font-weight: 800;
   letter-spacing: -0.035em;
+}
+
+.VPNavBar.home .title {
+  display: none;
+}
+
+.VPNavBar.home .content {
+  flex-grow: 1;
 }
 
 .VPNavBarTitle .logo {
@@ -133,9 +141,9 @@ body {
   max-width: 720px;
   color: var(--vp-c-text-1);
   font-size: clamp(42px, 6vw, 68px);
-  font-weight: 850;
-  letter-spacing: -0.055em;
-  line-height: 0.98;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
 }
 
 .VPHero .tagline {
@@ -146,29 +154,27 @@ body {
 }
 
 .VPHero .image-container {
-  transform: rotate(2deg);
+  transform: none;
 }
 
 .VPHero .image-src {
   width: 270px;
   height: 270px;
-  filter: drop-shadow(
-    7px 8px 0 color-mix(in srgb, var(--vp-c-text-1) 82%, transparent)
-  );
+  filter: none;
 }
 
 .VPButton {
   min-height: 46px;
   padding-inline: 22px !important;
-  font-weight: 800 !important;
-  border-width: 2px !important;
+  font-weight: 600 !important;
+  border-width: 1px !important;
   border-radius: 10px !important;
 }
 
 .VPButton.alt {
   color: var(--vp-c-text-1) !important;
   background: var(--vp-c-bg) !important;
-  border-color: var(--vp-c-text-1) !important;
+  border-color: var(--vp-c-border) !important;
 }
 
 .VPButton.alt:hover {
@@ -181,26 +187,26 @@ body {
 }
 
 .VPFeature {
-  border: 2px solid var(--vp-c-text-1) !important;
+  border: 1px solid var(--vp-c-border) !important;
   border-radius: 12px !important;
   background: var(--vp-c-bg-elv) !important;
-  box-shadow: 4px 5px 0 var(--vp-c-text-1);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 4%);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease;
 }
 
 .VPFeature:nth-child(3n + 1) {
-  transform: rotate(-0.35deg);
+  transform: none;
 }
 
 .VPFeature:nth-child(3n + 2) {
-  transform: rotate(0.3deg);
+  transform: none;
 }
 
 .VPFeature:hover {
-  box-shadow: 7px 8px 0 var(--vp-c-text-1);
-  transform: translate(-2px, -3px) rotate(0deg);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+  transform: translateY(-2px);
 }
 
 .VPFeature .icon {
@@ -212,14 +218,14 @@ body {
   font-family: "Excalifont", cursive;
   font-size: 22px;
   place-items: center;
-  border: 2px solid var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-border);
   border-radius: 999px;
   background: transparent;
 }
 
 .VPFeature .title {
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 650;
   letter-spacing: -0.025em;
 }
 
@@ -247,18 +253,17 @@ body {
 }
 
 .product-frame {
-  padding: 10px;
-  border: 2px solid var(--vp-c-text-1);
-  border-radius: 16px 13px 18px 12px;
-  background: #ffffff;
-  box-shadow: 10px 12px 0 var(--vp-c-text-1);
-  transform: rotate(-0.25deg);
+  padding: 6px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 14px;
+  background: var(--vp-c-bg-elv);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 12%);
 }
 
 .product-frame img {
   display: block;
   width: 100%;
-  border: 1px solid #cacaca;
+  border: 1px solid var(--vp-c-border);
   border-radius: 8px;
 }
 
@@ -298,13 +303,13 @@ body {
 .vp-doc div[class*="language-"] {
   border: 1px solid var(--vp-c-border);
   border-radius: 10px;
-  box-shadow: 3px 4px 0 color-mix(in srgb, var(--vp-c-text-1) 16%, transparent);
+  box-shadow: none;
 }
 
 .vp-doc table {
   display: table;
   width: 100%;
-  border: 2px solid var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-border);
 }
 
 .vp-doc th {
@@ -322,12 +327,12 @@ body {
   display: block;
   padding: 18px;
   color: var(--vp-c-text-1) !important;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none !important;
-  border: 2px solid var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-border);
   border-radius: 10px;
   background: var(--vp-c-bg-elv);
-  box-shadow: 3px 4px 0 var(--vp-c-text-1);
+  box-shadow: none;
   transition: all 140ms ease;
 }
 
@@ -335,8 +340,8 @@ body {
   color: #ffffff !important;
   border-color: var(--violet);
   background: var(--violet);
-  box-shadow: 5px 6px 0 var(--vp-c-text-1);
-  transform: translate(-2px, -2px);
+  box-shadow: none;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 700px) {
@@ -359,7 +364,7 @@ body {
 
   .product-frame {
     padding: 5px;
-    box-shadow: 6px 7px 0 var(--vp-c-text-1);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
   }
 
   .quick-links {
