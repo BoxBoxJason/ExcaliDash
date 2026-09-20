@@ -67,10 +67,16 @@ describe("sanitizer image dataURL handling (B1/B8)", () => {
       expect(files["file-1"].dataURL.length).toBe(1000);
     });
 
-    it("rejects a dataURL one byte over the cap with 413 + fileId (not blanked)", () => {
+    it("accepts exactly the decoded byte limit, including base64 whitespace", () => {
       configureSecuritySettings({ maxDataUrlSize: 1000 });
-      const dataURL = makeDataUrl(mime, 1001);
-      expect(dataURL.length).toBe(1001);
+      const encoded = Buffer.alloc(1000).toString("base64");
+      const dataURL = `data:${mime};base64,${encoded.match(/.{1,64}/g)!.join("\n")}`;
+      expect(runFile(dataURL).files["file-1"].dataURL).toBe(dataURL);
+    });
+
+    it("rejects an image one decoded byte over the cap with 413 + fileId", () => {
+      configureSecuritySettings({ maxDataUrlSize: 1000 });
+      const dataURL = `data:${mime};base64,${Buffer.alloc(1001).toString("base64")}`;
       const error = catchError(() => runFile(dataURL));
       expect(error).toBeInstanceOf(DrawingSanitizationError);
       expect((error as DrawingSanitizationError).statusCode).toBe(413);
@@ -119,7 +125,7 @@ describe("sanitizer image dataURL handling (B1/B8)", () => {
 
   it("surfaces the 413 through the update-schema sanitizer helper (index.ts wiring)", () => {
     configureSecuritySettings({ maxDataUrlSize: 1000 });
-    const dataURL = makeDataUrl("image/png", 1001);
+    const dataURL = `data:image/png;base64,${Buffer.alloc(1001).toString("base64")}`;
     const error = catchError(() =>
       sanitizeDrawingUpdateData({
         files: { "file-1": { id: "file-1", dataURL } },

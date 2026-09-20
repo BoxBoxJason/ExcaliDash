@@ -40,7 +40,7 @@ const API_FILE_REF = /^\/api\/files\/[\w-]{1,200}\/[\w-]{1,200}$/;
  * Configuration for security limits
  */
 export interface SecurityConfig {
-  /** Maximum size for dataURL in bytes (default: 10MB) */
+  /** Maximum decoded image size in bytes (default: 10MB). */
   maxDataUrlSize: number;
 }
 const defaultConfig: SecurityConfig = { maxDataUrlSize: 10 * 1024 * 1024 };
@@ -472,7 +472,10 @@ export const sanitizeDrawingData = (data: {
                   `Image file "${fileId}" has an invalid or unsupported image data URL and was rejected.`,
                 );
               }
-              if (value.length > MAX_DATAURL_SIZE) {
+              const base64 = value
+                .slice(value.indexOf(",") + 1)
+                .replace(/\s/g, "");
+              if (Buffer.byteLength(base64, "base64") > MAX_DATAURL_SIZE) {
                 throw new DrawingSanitizationError(
                   413,
                   fileId,
