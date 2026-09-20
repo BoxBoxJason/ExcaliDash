@@ -46,7 +46,11 @@ const ExcalidrawEditor: React.FC = () => {
   const [isSceneLoading, setIsSceneLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSavingOnLeave, setIsSavingOnLeave] = useState(false);
-  const { autoHideEnabled, setAutoHideEnabled } = useEditorAutoHide(id);
+  const [editorAutoHide] = usePreference("editorAutoHide", true);
+  const { autoHideEnabled, setAutoHideEnabled } = useEditorAutoHide(
+    id,
+    editorAutoHide,
+  );
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [langCode, setLangCode] = usePreference(
     "language",
