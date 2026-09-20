@@ -689,7 +689,7 @@ if (isMain) {
   process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
   process.on("SIGINT", () => gracefulShutdown("SIGINT"));
   void (async () => {
-    configureSecuritySettings({ maxDataUrlSize: config.uploadMaxBytes });
+    configureSecuritySettings({ maxDataUrlSize: config.fileUploadMaxBytes });
     await configureSqlite();
     startScheduledBackups({
       prisma,

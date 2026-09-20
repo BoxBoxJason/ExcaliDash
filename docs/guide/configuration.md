@@ -20,6 +20,7 @@ Set variables in your shell or the root `.env` file:
 ```dotenv
 EXCALIDASH_TAG=latest
 AUTH_MODE=local
+FILE_UPLOAD_MAX_MB=100
 JWT_SECRET=replace-with-a-long-random-value
 CSRF_SECRET=replace-with-a-different-random-value
 ```
