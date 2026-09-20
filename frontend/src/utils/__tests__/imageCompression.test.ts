@@ -4,6 +4,7 @@ import {
   compressExcalidrawFiles,
   resetImageCompressionMemo,
 } from "../imageCompression";
+import { IMAGE_COMPRESSION_THRESHOLD_MB_KEY } from "../imageCompressionSettings";
 
 // jsdom ships no real canvas/image decoder, so stub the pieces the compressor
 // touches. `toDataURLImpl` lets each test control what the browser "encodes".
@@ -27,6 +28,13 @@ const toDataURLSpy = () =>
   HTMLCanvasElement.prototype.toDataURL as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
+  const stored = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: (key: string) => stored.get(key) ?? null,
+    setItem: (key: string, value: string) => stored.set(key, value),
+    removeItem: (key: string) => stored.delete(key),
+    clear: () => stored.clear(),
+  });
   resetImageCompressionMemo();
   vi.stubGlobal("Image", FakeImage as unknown as typeof Image);
   HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
@@ -42,6 +50,28 @@ afterEach(() => {
 });
 
 describe("compression MIME detection", () => {
+  it("only compresses images above the configured size threshold", async () => {
+    localStorage.setItem(IMAGE_COMPRESSION_THRESHOLD_MB_KEY, "1");
+    toDataURLImpl = () => `data:image/webp;base64,${"B".repeat(1000)}`;
+
+    const skipped = await compressDroppedImagePayload({
+      dataURL: LARGE_INPUT,
+      mimeType: "image/png",
+    });
+
+    expect(skipped.changed).toBe(false);
+    expect(toDataURLSpy()).not.toHaveBeenCalled();
+
+    localStorage.setItem(IMAGE_COMPRESSION_THRESHOLD_MB_KEY, "0.1");
+    const compressed = await compressDroppedImagePayload({
+      dataURL: LARGE_INPUT,
+      mimeType: "image/png",
+    });
+
+    expect(compressed.changed).toBe(true);
+    expect(toDataURLSpy()).toHaveBeenCalled();
+  });
+
   it("labels the record with the MIME actually encoded, not the requested one", async () => {
     // Firefox returns a PNG dataURL even when webp encoding was requested.
     toDataURLImpl = () => `data:image/png;base64,${"B".repeat(1000)}`;

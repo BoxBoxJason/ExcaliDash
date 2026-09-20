@@ -1,3 +1,8 @@
+import {
+  IMAGE_COMPRESSION_ENABLED_KEY,
+  readImageCompressionThresholdMb,
+} from "./imageCompressionSettings";
+
 export type ExcalidrawFileRecord = {
   id?: string;
   dataURL?: string;
@@ -14,7 +19,6 @@ export type CompressionResult = {
   changed: boolean;
 };
 
-const DEFAULT_MIN_DATA_URL_LENGTH = 350_000;
 const DEFAULT_MAX_DIMENSION = 2800;
 const DEFAULT_MIN_IMPROVEMENT_RATIO = 0.9;
 
@@ -83,19 +87,25 @@ const getTargetMimeType = (originalMimeType: string): string => {
   return "image/webp";
 };
 
-const COMPRESSION_ENABLED_KEY = "excalidash-image-compression";
-
 const isCompressionEnabled = (): boolean => {
   if (typeof window === "undefined") return true;
-  const raw = window.localStorage?.getItem?.(COMPRESSION_ENABLED_KEY);
+  const raw = window.localStorage?.getItem?.(IMAGE_COMPRESSION_ENABLED_KEY);
   return raw !== "false";
+};
+
+const estimateDataUrlBytes = (dataURL: string): number => {
+  const separator = dataURL.indexOf(",");
+  if (separator < 0) return dataURL.length;
+  const payload = dataURL.slice(separator + 1).replace(/\s/g, "");
+  const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
+  return Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
 };
 
 const maybeCompressDataUrl = async (
   inputDataURL: string,
   sourceMimeType: string,
   options?: {
-    minDataUrlLength?: number;
+    minBytes?: number;
     maxDimension?: number;
     minImprovementRatio?: number;
   },
@@ -110,8 +120,8 @@ const maybeCompressDataUrl = async (
     };
   }
 
-  const minDataUrlLength =
-    options?.minDataUrlLength ?? DEFAULT_MIN_DATA_URL_LENGTH;
+  const minBytes =
+    options?.minBytes ?? readImageCompressionThresholdMb() * 1024 * 1024;
   const maxDimension = options?.maxDimension ?? DEFAULT_MAX_DIMENSION;
   const minImprovementRatio =
     options?.minImprovementRatio ?? DEFAULT_MIN_IMPROVEMENT_RATIO;
@@ -141,7 +151,7 @@ const maybeCompressDataUrl = async (
     };
   }
 
-  if (inputDataURL.length < minDataUrlLength) {
+  if (estimateDataUrlBytes(inputDataURL) < minBytes) {
     return {
       dataURL: inputDataURL,
       mimeType: effectiveMimeType,

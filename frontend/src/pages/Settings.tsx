@@ -18,6 +18,12 @@ import {
   EXCALIDASH_REQUIRED_MESSAGE,
   isExcalidashFile,
 } from "../utils/importUtils";
+import { resetImageCompressionMemo } from "../utils/imageCompression";
+import {
+  IMAGE_COMPRESSION_ENABLED_KEY,
+  readImageCompressionThresholdMb,
+  writeImageCompressionThresholdMb,
+} from "../utils/imageCompressionSettings";
 export const Settings: React.FC = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const navigate = useNavigate();
@@ -110,22 +116,32 @@ export const Settings: React.FC = () => {
     };
     fetchCollections();
   }, []);
-  const COMPRESSION_ENABLED_KEY = "excalidash-image-compression";
   const [imageCompression, setImageCompression] = useState<boolean>(() => {
     const raw =
       typeof window === "undefined"
         ? null
-        : window.localStorage?.getItem?.(COMPRESSION_ENABLED_KEY);
+        : window.localStorage?.getItem?.(IMAGE_COMPRESSION_ENABLED_KEY);
     return raw !== "false";
   });
+  const [imageCompressionThresholdMb, setImageCompressionThresholdMb] =
+    useState(readImageCompressionThresholdMb);
   const toggleImageCompression = () => {
     const next = !imageCompression;
     try {
-      window.localStorage?.setItem?.(COMPRESSION_ENABLED_KEY, String(next));
+      window.localStorage?.setItem?.(
+        IMAGE_COMPRESSION_ENABLED_KEY,
+        String(next),
+      );
     } catch {
       // Ignore unavailable storage in private/embedded contexts.
     }
+    resetImageCompressionMemo();
     setImageCompression(next);
+  };
+  const updateImageCompressionThreshold = (value: number) => {
+    const next = writeImageCompressionThresholdMb(value);
+    resetImageCompressionMemo();
+    setImageCompressionThresholdMb(next);
   };
   const checkForUpdates = async (channel: api.UpdateChannel) => {
     setUpdateLoading(true);
@@ -377,6 +393,8 @@ export const Settings: React.FC = () => {
             toggleTheme={toggleTheme}
             imageCompression={imageCompression}
             toggleImageCompression={toggleImageCompression}
+            imageCompressionThresholdMb={imageCompressionThresholdMb}
+            onImageCompressionThresholdChange={updateImageCompressionThreshold}
             editorAutoHide={editorAutoHide}
             onEditorAutoHideChange={setEditorAutoHide}
             updateChannel={updateChannel}

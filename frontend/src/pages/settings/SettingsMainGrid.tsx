@@ -14,6 +14,8 @@ type SettingsMainGridProps = {
   toggleTheme: () => void;
   imageCompression: boolean;
   toggleImageCompression: () => void;
+  imageCompressionThresholdMb: number;
+  onImageCompressionThresholdChange: (value: number) => void;
   editorAutoHide: boolean;
   onEditorAutoHideChange: (enabled: boolean) => void;
   updateChannel: api.UpdateChannel;
@@ -30,6 +32,8 @@ export const SettingsMainGrid = ({
   toggleTheme,
   imageCompression,
   toggleImageCompression,
+  imageCompressionThresholdMb,
+  onImageCompressionThresholdChange,
   editorAutoHide,
   onEditorAutoHideChange,
   updateChannel,
@@ -71,13 +75,35 @@ export const SettingsMainGrid = ({
       icon={imageCompression ? <Zap size={20} /> : <ZapOff size={20} />}
       tileClassName="border-black bg-blue-400 text-black dark:border-neutral-700 dark:bg-blue-400 dark:text-black"
       title="Optimized images"
-      description={imageCompression ? "Smaller uploads" : "Original quality"}
+      description={
+        imageCompression
+          ? `Compress images over ${imageCompressionThresholdMb} MB`
+          : "Original quality"
+      }
     >
-      <PlayfulSwitch
-        checked={imageCompression}
-        onChange={() => toggleImageCompression()}
-        ariaLabel="Toggle image optimization"
-      />
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-1 text-xs font-bold">
+          <span>MB</span>
+          <input
+            aria-label="Image compression threshold in MB"
+            type="number"
+            min="0.1"
+            max="100"
+            step="0.1"
+            value={imageCompressionThresholdMb}
+            disabled={!imageCompression}
+            onChange={(event) =>
+              onImageCompressionThresholdChange(event.target.valueAsNumber)
+            }
+            className="w-16 rounded border-2 border-black bg-white px-1.5 py-1 text-black disabled:opacity-50 dark:border-neutral-600"
+          />
+        </label>
+        <PlayfulSwitch
+          checked={imageCompression}
+          onChange={() => toggleImageCompression()}
+          ariaLabel="Toggle image optimization"
+        />
+      </div>
     </SettingsRow>
 
     <SettingsRow
