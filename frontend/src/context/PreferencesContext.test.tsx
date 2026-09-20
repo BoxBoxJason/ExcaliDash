@@ -138,4 +138,40 @@ describe("PreferencesContext", () => {
       expect(result.current[0]).toBe("it-IT");
     });
   });
+
+  it("gates writes again while a different account hydrates", async () => {
+    const { result, rerender } = renderHook(
+      () => usePreference("language", "en"),
+      { wrapper },
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    let resolvePreferences!: (value: api.UserPreferences) => void;
+    getPrefsMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePreferences = resolve;
+      }),
+    );
+    state.user = { id: "another-user" };
+    rerender();
+    act(() => result.current[1]("de-DE"));
+    expect(updatePrefsMock).not.toHaveBeenCalled();
+    await act(async () => resolvePreferences({ language: "it-IT" }));
+    expect(result.current[0]).toBe("it-IT");
+  });
+
+  it("retries the same preference after a failed save", async () => {
+    updatePrefsMock.mockRejectedValueOnce(new Error("offline"));
+    const { result } = renderHook(() => usePreference("language", "en"), {
+      wrapper,
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => result.current[1]("es-ES"));
+    await act(async () => result.current[1]("es-ES"));
+    expect(updatePrefsMock).toHaveBeenCalledTimes(2);
+  });
 });
