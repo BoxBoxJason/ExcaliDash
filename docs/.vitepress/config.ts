@@ -59,7 +59,7 @@ export default defineConfig({
     ],
     footer: {
       message: "Self-hosted, open source, and built around Excalidraw.",
-      copyright: "Released under the MIT License.",
+      copyright: "Released under the GNU LGPL v3.0.",
     },
     docFooter: {
       prev: "Previous",
