@@ -17,6 +17,11 @@ import {
   settingsPrimaryButtonClass,
 } from "./SettingsRow";
 import { useLocale } from "../../context/useLocale";
+import {
+  MIN_IMAGE_COMPRESSION_THRESHOLD_MB,
+  MAX_IMAGE_COMPRESSION_THRESHOLD_MB,
+  normalizeImageCompressionThreshold,
+} from "../../utils/imageCompressionSettings";
 
 type SettingsMainGridProps = {
   exportBackup: () => void;
@@ -116,14 +121,25 @@ export const SettingsMainGrid = ({
             <input
               aria-label="Image compression threshold in MB"
               type="number"
-              min="0.1"
-              max="100"
-              step="0.1"
-              value={imageCompressionThresholdMb}
+              min={MIN_IMAGE_COMPRESSION_THRESHOLD_MB}
+              max={MAX_IMAGE_COMPRESSION_THRESHOLD_MB}
+              step="0.05"
+              key={imageCompressionThresholdMb}
+              defaultValue={imageCompressionThresholdMb}
               disabled={!imageCompression}
-              onChange={(event) =>
-                onImageCompressionThresholdChange(event.target.valueAsNumber)
-              }
+              onBlur={(event) => {
+                const input = event.currentTarget;
+                const value = Number.isFinite(input.valueAsNumber)
+                  ? normalizeImageCompressionThreshold(input.valueAsNumber)
+                  : imageCompressionThresholdMb;
+                input.value = String(value);
+                if (value !== imageCompressionThresholdMb) {
+                  onImageCompressionThresholdChange(value);
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+              }}
               className="w-16 rounded border-2 border-black bg-white px-1.5 py-1 text-black disabled:opacity-50 dark:border-neutral-600"
             />
           </label>

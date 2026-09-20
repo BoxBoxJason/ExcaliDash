@@ -6,6 +6,16 @@ export const DEFAULT_IMAGE_COMPRESSION_THRESHOLD_MB = 0.25;
 export const MIN_IMAGE_COMPRESSION_THRESHOLD_MB = 0.1;
 export const MAX_IMAGE_COMPRESSION_THRESHOLD_MB = 100;
 
+export const readImageCompressionEnabled = (): boolean => {
+  try {
+    return (
+      window.localStorage?.getItem?.(IMAGE_COMPRESSION_ENABLED_KEY) !== "false"
+    );
+  } catch {
+    return true;
+  }
+};
+
 export const normalizeImageCompressionThreshold = (value: number): number => {
   if (!Number.isFinite(value)) return DEFAULT_IMAGE_COMPRESSION_THRESHOLD_MB;
   return Math.min(
@@ -22,7 +32,7 @@ export const readImageCompressionThresholdMb = (): number => {
     const raw = window.localStorage?.getItem?.(
       IMAGE_COMPRESSION_THRESHOLD_MB_KEY,
     );
-    if (raw === null) return DEFAULT_IMAGE_COMPRESSION_THRESHOLD_MB;
+    if (!raw?.trim()) return DEFAULT_IMAGE_COMPRESSION_THRESHOLD_MB;
     return normalizeImageCompressionThreshold(Number(raw));
   } catch {
     return DEFAULT_IMAGE_COMPRESSION_THRESHOLD_MB;

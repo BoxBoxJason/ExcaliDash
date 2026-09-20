@@ -1,5 +1,5 @@
 import {
-  IMAGE_COMPRESSION_ENABLED_KEY,
+  readImageCompressionEnabled,
   readImageCompressionThresholdMb,
 } from "./imageCompressionSettings";
 
@@ -87,12 +87,6 @@ const getTargetMimeType = (originalMimeType: string): string => {
   return "image/webp";
 };
 
-const isCompressionEnabled = (): boolean => {
-  if (typeof window === "undefined") return true;
-  const raw = window.localStorage?.getItem?.(IMAGE_COMPRESSION_ENABLED_KEY);
-  return raw !== "false";
-};
-
 const estimateDataUrlBytes = (dataURL: string): number => {
   const separator = dataURL.indexOf(",");
   if (separator < 0) return dataURL.length;
@@ -104,13 +98,8 @@ const estimateDataUrlBytes = (dataURL: string): number => {
 const maybeCompressDataUrl = async (
   inputDataURL: string,
   sourceMimeType: string,
-  options?: {
-    minBytes?: number;
-    maxDimension?: number;
-    minImprovementRatio?: number;
-  },
 ): Promise<CompressionResult> => {
-  if (!isCompressionEnabled()) {
+  if (!readImageCompressionEnabled()) {
     return {
       dataURL: inputDataURL,
       mimeType: sourceMimeType,
@@ -120,11 +109,7 @@ const maybeCompressDataUrl = async (
     };
   }
 
-  const minBytes =
-    options?.minBytes ?? readImageCompressionThresholdMb() * 1024 * 1024;
-  const maxDimension = options?.maxDimension ?? DEFAULT_MAX_DIMENSION;
-  const minImprovementRatio =
-    options?.minImprovementRatio ?? DEFAULT_MIN_IMPROVEMENT_RATIO;
+  const minBytes = readImageCompressionThresholdMb() * 1024 * 1024;
 
   if (!isDataImageUrl(inputDataURL)) {
     return {
@@ -164,7 +149,11 @@ const maybeCompressDataUrl = async (
   const image = await loadImageFromDataUrl(inputDataURL);
   const baseWidth = image.naturalWidth || image.width || 1;
   const baseHeight = image.naturalHeight || image.height || 1;
-  const { width, height } = clampDimension(baseWidth, baseHeight, maxDimension);
+  const { width, height } = clampDimension(
+    baseWidth,
+    baseHeight,
+    DEFAULT_MAX_DIMENSION,
+  );
   const canvas = drawToCanvas(image, width, height);
   const targetMimeType = getTargetMimeType(effectiveMimeType);
 
@@ -179,7 +168,8 @@ const maybeCompressDataUrl = async (
   }
 
   const improvedEnough =
-    best.length <= Math.floor(inputDataURL.length * minImprovementRatio);
+    best.length <=
+    Math.floor(inputDataURL.length * DEFAULT_MIN_IMPROVEMENT_RATIO);
   if (!improvedEnough) {
     return {
       dataURL: inputDataURL,

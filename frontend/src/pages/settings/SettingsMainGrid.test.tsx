@@ -65,13 +65,17 @@ describe("SettingsMainGrid", () => {
       </LocaleProvider>,
     );
 
-    fireEvent.change(
-      screen.getByRole("spinbutton", {
-        name: "Image compression threshold in MB",
-      }),
-      { target: { value: "2.5" } },
-    );
-
+    const input = screen.getByRole("spinbutton", {
+      name: "Image compression threshold in MB",
+    });
+    fireEvent.change(input, { target: { value: "" } });
+    expect(input).toHaveValue(null);
+    expect(onThresholdChange).not.toHaveBeenCalled();
+    fireEvent.blur(input);
+    expect(input).toHaveValue(0.25);
+    fireEvent.change(input, { target: { value: "2.5" } });
+    expect(onThresholdChange).not.toHaveBeenCalled();
+    fireEvent.blur(input);
     expect(onThresholdChange).toHaveBeenCalledWith(2.5);
   });
 });

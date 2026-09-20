@@ -21,6 +21,7 @@ import {
 import { resetImageCompressionMemo } from "../utils/imageCompression";
 import {
   IMAGE_COMPRESSION_ENABLED_KEY,
+  readImageCompressionEnabled,
   readImageCompressionThresholdMb,
   writeImageCompressionThresholdMb,
 } from "../utils/imageCompressionSettings";
@@ -116,13 +117,9 @@ export const Settings: React.FC = () => {
     };
     fetchCollections();
   }, []);
-  const [imageCompression, setImageCompression] = useState<boolean>(() => {
-    const raw =
-      typeof window === "undefined"
-        ? null
-        : window.localStorage?.getItem?.(IMAGE_COMPRESSION_ENABLED_KEY);
-    return raw !== "false";
-  });
+  const [imageCompression, setImageCompression] = useState(
+    readImageCompressionEnabled,
+  );
   const [imageCompressionThresholdMb, setImageCompressionThresholdMb] =
     useState(readImageCompressionThresholdMb);
   const toggleImageCompression = () => {
