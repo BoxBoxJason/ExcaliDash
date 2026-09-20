@@ -20,6 +20,7 @@ import {
   SidebarContextMenu,
   type SidebarContextMenuState,
 } from "./sidebar/SidebarContextMenu";
+import { useLocale } from "../context/useLocale";
 
 interface SidebarProps {
   collections: Collection[];
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onDrop,
 }) => {
   const { logout, user, authEnabled } = useAuth();
+  const { t } = useLocale();
   const [isCreating, setIsCreating] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -105,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="space-y-1">
             <div className="px-6 pb-2 text-xs font-semibold text-slate-400 dark:text-neutral-500">
-              Library
+              {t("sidebar.library")}
             </div>
             <div className="pl-3 pr-2">
               <button
@@ -125,20 +127,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       : "text-slate-400 dark:text-neutral-500",
                   )}
                 />
-                <span className="min-w-0 flex-1 text-left">All Drawings</span>
+                <span className="min-w-0 flex-1 text-left">
+                  {t("sidebar.allDrawings")}
+                </span>
               </button>
             </div>
             <SidebarItem
               id={"shared"}
               icon={<Shield size={18} />}
-              label="Shared with me"
+              label={t("sidebar.sharedWithMe")}
               isActive={selectedCollectionId === "shared"}
               onClick={() => onSelectCollection("shared")}
             />
             <SidebarItem
               id={null}
               icon={<Archive size={18} />}
-              label="Unorganized"
+              label={t("sidebar.unorganized")}
               isActive={selectedCollectionId === null}
               onClick={() => onSelectCollection(null)}
               onDrop={onDrop}
@@ -147,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="space-y-1">
             <div className="flex items-center justify-between px-6 pb-2 group/header">
               <span className="text-xs font-semibold text-slate-400 dark:text-neutral-500">
-                Collections
+                {t("sidebar.collections")}
               </span>
               <button
                 onClick={(e) => {
@@ -155,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   setIsCreating(true);
                 }}
                 className="ui-icon-button h-7 w-7 border-transparent bg-transparent shadow-none opacity-0 group-hover/header:opacity-100 dark:bg-transparent"
-                title="New Collection"
+                title={t("sidebar.newCollection")}
               >
                 <Plus size={14} strokeWidth={2.5} />
               </button>
@@ -171,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="text"
                   value={newCollectionName}
                   onChange={(e) => setNewCollectionName(e.target.value)}
-                  placeholder="New Collection..."
+                  placeholder={t("sidebar.newCollectionPlaceholder")}
                   className="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border-2 border-slate-800 dark:border-neutral-700 rounded-lg shadow-[1.5px_1.5px_0px_0px_rgba(30,41,59,0.9)] dark:shadow-[1.5px_1.5px_0px_0px_rgba(255,255,255,0.18)] outline-none placeholder:text-slate-400 dark:placeholder:text-neutral-500 font-semibold text-slate-900 dark:text-white"
                   onBlur={() => !newCollectionName && setIsCreating(false)}
                 />
@@ -209,7 +213,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       {/* Shared indicator — only for owned collections that have been shared */}
                       {collection.isOwner !== false && collection.isShared && (
                         <span className="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400">
-                          Shared
+                          {t("sidebar.shared")}
                         </span>
                       )}
                       {/* Role badge */}
@@ -225,9 +229,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       >
                         {collection.isOwner === false
                           ? collection.sharedRole === "edit"
-                            ? "Editor"
-                            : "Viewer"
-                          : "Owner"}
+                            ? t("sidebar.editor")
+                            : t("sidebar.viewer")
+                          : t("sidebar.owner")}
                       </span>
                     </div>
                   }
@@ -259,9 +263,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
       <ConfirmModal
         isOpen={!!collectionToDelete}
-        title="Delete Collection"
-        message="Are you sure you want to delete this collection? All drawings inside will be moved to Unorganized."
-        confirmText="Delete Collection"
+        title={t("sidebar.deleteCollection")}
+        message={t("sidebar.deleteCollectionMessage")}
+        confirmText={t("sidebar.deleteCollection")}
         onConfirm={() => {
           if (collectionToDelete) {
             onDeleteCollection(collectionToDelete);
