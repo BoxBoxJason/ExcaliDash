@@ -214,6 +214,8 @@ const rememberProcessedDataUrl = (dataURL: string): void => {
   processedDataUrls.add(dataURL);
 };
 
+let memoSettings = "";
+
 // Exposed for tests; also useful to drop stale entries between drawings.
 export const resetImageCompressionMemo = (): void => {
   processedDataUrls.clear();
@@ -227,7 +229,12 @@ export const compressExcalidrawFiles = async (
   changedIds: string[];
 }> => {
   const entries = Object.entries(files || {});
-  if (entries.length === 0) {
+  const settings = `${readImageCompressionEnabled()}:${readImageCompressionThresholdMb()}`;
+  if (settings !== memoSettings) {
+    resetImageCompressionMemo();
+    memoSettings = settings;
+  }
+  if (entries.length === 0 || !readImageCompressionEnabled()) {
     return { files, changed: false, changedIds: [] };
   }
 

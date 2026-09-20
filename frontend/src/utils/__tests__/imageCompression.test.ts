@@ -99,6 +99,20 @@ describe("compression MIME detection", () => {
 });
 
 describe("compressExcalidrawFiles memoization", () => {
+  it.each([
+    ["excalidash-image-compression", "false", "true"],
+    [IMAGE_COMPRESSION_THRESHOLD_MB_KEY, "1", "0.1"],
+  ])("reconsiders images after %s changes", async (key, before, after) => {
+    toDataURLImpl = () => `data:image/webp;base64,${"B".repeat(1000)}`;
+    const files = {
+      a: { id: "a", dataURL: LARGE_INPUT, mimeType: "image/png" },
+    };
+    localStorage.setItem(key, before);
+    expect((await compressExcalidrawFiles(files)).changed).toBe(false);
+    localStorage.setItem(key, after);
+    expect((await compressExcalidrawFiles(files)).changed).toBe(true);
+  });
+
   it("does not re-encode an image whose compression yielded no improvement", async () => {
     // Encoded output is larger than the input → no improvement, unchanged.
     toDataURLImpl = () => `data:image/webp;base64,${"C".repeat(500_000)}`;
