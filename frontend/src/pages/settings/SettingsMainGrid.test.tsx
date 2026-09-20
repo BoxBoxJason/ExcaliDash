@@ -1,13 +1,18 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsMainGrid } from "./SettingsMainGrid";
 import { LocaleProvider } from "../../context/LocaleProvider";
 
+const preference = vi.hoisted(() => ({ language: "en", setLanguage: vi.fn() }));
 vi.mock("../../context/PreferencesContext", () => ({
-  usePreference: () => ["en", vi.fn()],
+  usePreference: () => [preference.language, preference.setLanguage],
 }));
 
 describe("SettingsMainGrid", () => {
+  beforeEach(() => {
+    preference.language = "en";
+    preference.setLanguage.mockClear();
+  });
   it("updates the editor auto-hide default", () => {
     const onEditorAutoHideChange = vi.fn();
     render(
@@ -42,6 +47,7 @@ describe("SettingsMainGrid", () => {
   });
 
   it("updates the image compression threshold", () => {
+    preference.language = "fr-FR";
     const onThresholdChange = vi.fn();
     render(
       <LocaleProvider>
@@ -65,6 +71,10 @@ describe("SettingsMainGrid", () => {
       </LocaleProvider>,
     );
 
+    expect(screen.getByRole("combobox", { name: "Language" })).toHaveValue(
+      "fr-FR",
+    );
+    expect(preference.setLanguage).not.toHaveBeenCalled();
     const input = screen.getByRole("spinbutton", {
       name: "Image compression threshold in MB",
     });

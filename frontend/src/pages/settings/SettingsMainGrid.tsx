@@ -58,7 +58,7 @@ export const SettingsMainGrid = ({
   onUpdateChannelChange,
   onCheckForUpdates,
 }: SettingsMainGridProps) => {
-  const { locale, setLanguage, t } = useLocale();
+  const { language, setLanguage, t } = useLocale();
 
   return (
     <SettingsCard>
@@ -69,12 +69,15 @@ export const SettingsMainGrid = ({
       >
         <select
           aria-label={t("settings.language")}
-          value={locale}
+          value={language}
           onChange={(event) => setLanguage(event.target.value)}
           className="rounded-lg border-2 border-black bg-white px-2 py-1.5 text-sm font-bold text-black dark:border-neutral-600"
         >
           <option value="en">English</option>
           <option value="zh-CN">简体中文</option>
+          {language !== "en" && language !== "zh-CN" && (
+            <option value={language}>{language} (editor language)</option>
+          )}
         </select>
       </SettingsRow>
 
