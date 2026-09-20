@@ -1,31 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { LOCALE_KEY, type Locale, resolveLocale, translate } from "../i18n";
+import React, { useEffect } from "react";
+import { resolveLocale, translate } from "../i18n";
 import { LocaleContext } from "./localeContext";
-
-const getInitialLocale = (): Locale => {
-  if (typeof window === "undefined") return "en";
-  try {
-    return resolveLocale(
-      window.localStorage?.getItem?.(LOCALE_KEY) ?? navigator.language,
-    );
-  } catch {
-    return resolveLocale(navigator.language);
-  }
-};
+import { usePreference } from "./PreferencesContext";
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
-
-  const setLocale = (next: Locale) => {
-    try {
-      window.localStorage?.setItem?.(LOCALE_KEY, next);
-    } catch {
-      // The selected locale still applies for this session.
-    }
-    setLocaleState(next);
-  };
+  const defaultLanguage =
+    typeof navigator === "undefined" ? "en" : navigator.language;
+  const [language, setLanguage] = usePreference("language", defaultLanguage);
+  const locale = resolveLocale(language);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -33,7 +17,12 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <LocaleContext.Provider
-      value={{ locale, setLocale, t: (key) => translate(locale, key) }}
+      value={{
+        locale,
+        language,
+        setLanguage,
+        t: (key) => translate(locale, key),
+      }}
     >
       {children}
     </LocaleContext.Provider>

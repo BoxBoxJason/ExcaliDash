@@ -16,7 +16,6 @@ import {
   SettingsRow,
   settingsPrimaryButtonClass,
 } from "./SettingsRow";
-import type { Locale } from "../../i18n";
 import { useLocale } from "../../context/useLocale";
 
 type SettingsMainGridProps = {
@@ -54,7 +53,7 @@ export const SettingsMainGrid = ({
   onUpdateChannelChange,
   onCheckForUpdates,
 }: SettingsMainGridProps) => {
-  const { locale, setLocale, t } = useLocale();
+  const { locale, setLanguage, t } = useLocale();
 
   return (
     <SettingsCard>
@@ -66,7 +65,7 @@ export const SettingsMainGrid = ({
         <select
           aria-label={t("settings.language")}
           value={locale}
-          onChange={(event) => setLocale(event.target.value as Locale)}
+          onChange={(event) => setLanguage(event.target.value)}
           className="rounded-lg border-2 border-black bg-white px-2 py-1.5 text-sm font-bold text-black dark:border-neutral-600"
         >
           <option value="en">English</option>

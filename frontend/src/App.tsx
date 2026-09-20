@@ -11,6 +11,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { PreferencesProvider } from "./context/PreferencesContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Loader2 } from "lucide-react";
+import { LocaleProvider } from "./context/LocaleProvider";
 
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })),
@@ -60,75 +61,77 @@ function App() {
     <Router>
       <AuthProvider>
         <PreferencesProvider>
-          <ThemeProvider>
-            <UploadProvider>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route
-                    path="/reset-password"
-                    element={<PasswordResetRequest />}
-                  />
-                  <Route
-                    path="/reset-password-confirm"
-                    element={<PasswordResetConfirm />}
-                  />
-                  <Route path="/auth-setup" element={<AuthSetupChoice />} />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/collections"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute>
-                        <Admin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/editor/:id"
-                    element={
-                      <ProtectedRoute>
-                        <Editor />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/shared/:id" element={<Editor />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Suspense>
-            </UploadProvider>
-          </ThemeProvider>
+          <LocaleProvider>
+            <ThemeProvider>
+              <UploadProvider>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route
+                      path="/reset-password"
+                      element={<PasswordResetRequest />}
+                    />
+                    <Route
+                      path="/reset-password-confirm"
+                      element={<PasswordResetConfirm />}
+                    />
+                    <Route path="/auth-setup" element={<AuthSetupChoice />} />
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/collections"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute>
+                          <Admin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/editor/:id"
+                      element={
+                        <ProtectedRoute>
+                          <Editor />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/shared/:id" element={<Editor />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
+              </UploadProvider>
+            </ThemeProvider>
+          </LocaleProvider>
         </PreferencesProvider>
       </AuthProvider>
     </Router>

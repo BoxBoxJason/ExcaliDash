@@ -48,8 +48,6 @@ const messages = {
 export type Locale = keyof typeof messages;
 export type TranslationKey = keyof (typeof messages)["en"];
 
-export const LOCALE_KEY = "excalidash-locale";
-
 export const resolveLocale = (value: string | null | undefined): Locale =>
   value?.toLowerCase().startsWith("zh") ? "zh-CN" : "en";
 

@@ -4,14 +4,11 @@ import "@excalidraw/excalidraw/index.css";
 import "./index.css";
 import App from "./App.tsx";
 import { configureDisplayFont } from "./utils/displayFont";
-import { LocaleProvider } from "./context/LocaleProvider";
 
 configureDisplayFont();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <LocaleProvider>
-      <App />
-    </LocaleProvider>
+    <App />
   </StrictMode>,
 );

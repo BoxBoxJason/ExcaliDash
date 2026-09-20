@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { SettingsMainGrid } from "./SettingsMainGrid";
 import { LocaleProvider } from "../../context/LocaleProvider";
 
+vi.mock("../../context/PreferencesContext", () => ({
+  usePreference: () => ["en", vi.fn()],
+}));
+
 describe("SettingsMainGrid", () => {
   it("updates the editor auto-hide default", () => {
     const onEditorAutoHideChange = vi.fn();
