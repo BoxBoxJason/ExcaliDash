@@ -40,6 +40,24 @@ const getSocketUrl = () =>
       import.meta.env.VITE_DEV_BACKEND_URL ||
       "http://localhost:8000";
 
+type RoomJoinSocket = Pick<Socket, "connected" | "emit" | "on" | "off">;
+
+export const bindRoomJoin = (
+  socket: RoomJoinSocket,
+  drawingId: string,
+  user: UserIdentity,
+  onJoined: (payload: any) => void,
+): (() => void) => {
+  const joinRoom = () => {
+    socket.emit("join-room", { drawingId, user }, onJoined);
+  };
+
+  socket.on("connect", joinRoom);
+  if (socket.connected) joinRoom();
+
+  return () => socket.off("connect", joinRoom);
+};
+
 export const useEditorCollaboration = ({
   drawingId,
   me,
@@ -108,7 +126,7 @@ export const useEditorCollaboration = ({
         (window as any).__EXCALIDASH_SOCKET_STATUS__ = { connected: false };
       });
     }
-    socket.emit("join-room", { drawingId, user: me }, (payload: any) => {
+    const detachRoomJoin = bindRoomJoin(socket, drawingId, me, (payload) => {
       const serverUser = payload?.user;
       if (!serverUser || typeof serverUser.id !== "string") return;
       const next: UserIdentity = {
@@ -342,6 +360,7 @@ export const useEditorCollaboration = ({
     );
     const pendingRemoteElements = pendingRemoteElementsRef.current;
     return () => {
+      detachRoomJoin();
       detachCanvasZoom();
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("blur", onBlur);
