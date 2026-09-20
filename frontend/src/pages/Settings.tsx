@@ -5,6 +5,7 @@ import * as api from "../api";
 import type { Collection } from "../types";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { usePreference } from "../context/PreferencesContext";
 import { SettingsMainGrid } from "./settings/SettingsMainGrid";
 import { AdvancedSettings } from "./settings/AdvancedSettings";
 import { SettingsConfirmModals } from "./settings/SettingsConfirmModals";
@@ -22,6 +23,10 @@ export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { authEnabled, user, authMode } = useAuth();
+  const [editorAutoHide, setEditorAutoHide] = usePreference(
+    "editorAutoHide",
+    true,
+  );
   const isSingleUserOwner = authEnabled === false;
   const isAdmin = isSingleUserOwner || user?.role === "ADMIN";
   const mustResetPassword = Boolean(user?.mustResetPassword);
@@ -372,6 +377,8 @@ export const Settings: React.FC = () => {
             toggleTheme={toggleTheme}
             imageCompression={imageCompression}
             toggleImageCompression={toggleImageCompression}
+            editorAutoHide={editorAutoHide}
+            onEditorAutoHideChange={setEditorAutoHide}
             updateChannel={updateChannel}
             updateInfo={updateInfo}
             updateLoading={updateLoading}

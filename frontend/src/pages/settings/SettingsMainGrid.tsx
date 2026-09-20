@@ -1,4 +1,4 @@
-import { Archive, Moon, Sun, Zap, ZapOff } from "lucide-react";
+import { Archive, Eye, EyeOff, Moon, Sun, Zap, ZapOff } from "lucide-react";
 import type * as api from "../../api";
 import { PlayfulSwitch } from "../../components/PlayfulSwitch";
 import { UpdateSettingsCard } from "./UpdateSettingsCard";
@@ -14,6 +14,8 @@ type SettingsMainGridProps = {
   toggleTheme: () => void;
   imageCompression: boolean;
   toggleImageCompression: () => void;
+  editorAutoHide: boolean;
+  onEditorAutoHideChange: (enabled: boolean) => void;
   updateChannel: api.UpdateChannel;
   updateInfo: api.UpdateInfo | null;
   updateLoading: boolean;
@@ -28,6 +30,8 @@ export const SettingsMainGrid = ({
   toggleTheme,
   imageCompression,
   toggleImageCompression,
+  editorAutoHide,
+  onEditorAutoHideChange,
   updateChannel,
   updateInfo,
   updateLoading,
@@ -45,6 +49,21 @@ export const SettingsMainGrid = ({
         checked={theme === "dark"}
         onChange={() => toggleTheme()}
         ariaLabel="Toggle dark mode"
+      />
+    </SettingsRow>
+
+    <SettingsRow
+      icon={editorAutoHide ? <EyeOff size={20} /> : <Eye size={20} />}
+      tileClassName="border-black bg-cyan-400 text-black dark:border-neutral-700 dark:bg-cyan-400 dark:text-black"
+      title="Auto-hide editor header"
+      description={
+        editorAutoHide ? "Hide by default" : "Keep visible by default"
+      }
+    >
+      <PlayfulSwitch
+        checked={editorAutoHide}
+        onChange={onEditorAutoHideChange}
+        ariaLabel="Toggle editor header auto-hide default"
       />
     </SettingsRow>
 
