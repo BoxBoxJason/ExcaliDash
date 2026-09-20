@@ -61,6 +61,7 @@ export interface UserPreferences {
   dashboardSortDirection?: SortDirection;
   language?: string;
   gridStep?: number;
+  editorAutoHide?: boolean;
 }
 
 export interface ApiKeyMetadata {

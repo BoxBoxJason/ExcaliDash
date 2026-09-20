@@ -9,6 +9,7 @@ describe("userPreferencesSchema", () => {
       dashboardSortDirection: "asc",
       language: "fr-FR",
       gridStep: 8,
+      editorAutoHide: false,
     });
     expect(parsed.success).toBe(true);
   });
@@ -43,6 +44,13 @@ describe("userPreferencesSchema", () => {
     if (parsed.success) {
       expect(parsed.data.language).toBe("zh-CN");
     }
+  });
+
+  it("accepts an editor auto-hide preference", () => {
+    const parsed = userPreferencesSchema.partial().safeParse({
+      editorAutoHide: false,
+    });
+    expect(parsed.success).toBe(true);
   });
 
   it("trims surrounding whitespace on language", () => {

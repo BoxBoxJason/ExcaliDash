@@ -23,6 +23,7 @@ const KNOWN_KEYS: PreferenceKey[] = [
   "dashboardSortDirection",
   "language",
   "gridStep",
+  "editorAutoHide",
 ];
 
 const pickKnown = (source: Partial<Preferences>): Preferences => {
