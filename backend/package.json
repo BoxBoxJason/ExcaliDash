@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint src scripts --config ../eslint.config.js",
+    "lint": "eslint src scripts --config ../eslint.config.js --max-warnings 0",
     "check:env-boundary": "node ../scripts/check-env-boundary.cjs",
     "gen:env": "ts-node src/config/generateEnvReference.ts"
   },

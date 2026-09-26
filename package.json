@@ -11,7 +11,7 @@
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
     "test": "npm --prefix frontend test && npm --prefix backend test",
     "test:e2e": "npm --prefix e2e test",
-    "lint": "eslint backend/src backend/scripts e2e scripts && npm --prefix frontend run lint",
+    "lint": "eslint backend/src backend/scripts e2e scripts --max-warnings 0 && npm --prefix frontend run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:version": "node scripts/check-version.cjs",
