@@ -98,7 +98,7 @@ export default defineConfig({
             },
           },
           {
-            command: `cd ../frontend && npm run dev -- --host --port ${frontendRuntimePort}`,
+            command: `cd ../frontend && npm run dev -- --host 127.0.0.1 --port ${frontendRuntimePort}`,
             url: FRONTEND_URL,
             reuseExistingServer: process.env.E2E_REUSE_SERVER === "true",
             timeout: 120000,
