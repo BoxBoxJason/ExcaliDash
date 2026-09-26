@@ -132,6 +132,24 @@ describe("Drawing Version History", () => {
   });
 
   describe("GET /drawings/:id/history", () => {
+    it.each([
+      "limit=-1",
+      "limit=0",
+      "offset=-1",
+      "limit=1.5",
+      "offset=abc",
+      "limit=1&limit=2",
+      "offset=999999999999999999999",
+    ])("rejects invalid pagination: %s", async (query) => {
+      prisma.drawing.findUnique.mockResolvedValue(mockDrawing);
+      prisma.drawing.findFirst.mockResolvedValue(mockDrawing);
+      const res = await request(app).get(
+        `/drawings/${MOCK_DRAWING_ID}/history?${query}`,
+      );
+      expect(res.status).toBe(400);
+      expect(prisma.drawingSnapshot.findMany).not.toHaveBeenCalled();
+    });
+
     it("returns snapshot list for a drawing", async () => {
       prisma.drawing.findUnique.mockResolvedValue(mockDrawing);
       prisma.drawing.findFirst.mockResolvedValue(mockDrawing);
@@ -279,6 +297,7 @@ describe("Drawing Version History", () => {
           elements: mockSnapshot.elements,
           appState: mockSnapshot.appState,
           files: mockSnapshot.files,
+          preview: null,
         }),
       });
     });

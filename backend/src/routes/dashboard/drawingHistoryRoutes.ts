@@ -44,8 +44,20 @@ export const registerDrawingHistoryRoutes = (
         return res.status(404).json({ error: "Drawing not found" });
       }
 
-      const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
-      const offset = parseInt(req.query.offset as string) || 0;
+      const requestedLimit = Number(req.query.limit ?? 50);
+      const offset = Number(req.query.offset ?? 0);
+      if (
+        !Number.isSafeInteger(requestedLimit) ||
+        requestedLimit < 1 ||
+        !Number.isSafeInteger(offset) ||
+        offset < 0 ||
+        (req.query.limit !== undefined &&
+          typeof req.query.limit !== "string") ||
+        (req.query.offset !== undefined && typeof req.query.offset !== "string")
+      ) {
+        return res.status(400).json({ error: "Invalid history pagination" });
+      }
+      const limit = Math.min(requestedLimit, 200);
 
       const [snapshots, totalCount] = await Promise.all([
         prisma.drawingSnapshot.findMany({
@@ -145,6 +157,7 @@ export const registerDrawingHistoryRoutes = (
           elements: restoredElements,
           appState: restoredAppState,
           files: restoredFiles,
+          preview: null,
           version: { increment: 1 },
         },
       });
