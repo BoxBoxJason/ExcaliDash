@@ -78,7 +78,10 @@ export default defineConfig({
       ? undefined
       : [
           {
-            command: "cd ../backend && npm run dev",
+            // Tests need a stable process, not a watcher that restarts when
+            // another local build regenerates Prisma or writes artifacts.
+            command:
+              "cd ../backend && npm run predev && npx ts-node src/index.ts",
             url: `${BACKEND_URL}/health`,
             reuseExistingServer: process.env.E2E_REUSE_SERVER === "true",
             timeout: 120000,
