@@ -4,10 +4,8 @@ import {
   canViewDrawing,
   getDrawingAccess,
 } from "../../authz/sharing";
-import {
-  decodeSnapshotField,
-  encodeSnapshotField,
-} from "../../snapshots/snapshotCodec";
+import { decodeSnapshotField } from "../../snapshots/snapshotCodec";
+import { applySceneUpdateTx, isVersionConflict } from "./sceneUpdate";
 import type { DrawingRouteContext } from "./drawingRouteContext";
 
 export const registerDrawingHistoryRoutes = (
@@ -139,28 +137,34 @@ export const registerDrawingHistoryRoutes = (
       const restoredAppState = decodeSnapshotField(snapshot.appState);
       const restoredFiles = decodeSnapshotField(snapshot.files);
 
-      // Snapshot current state before restoring (so restore is reversible)
-      await prisma.drawingSnapshot.create({
-        data: {
+      // Share the save path's transaction and version guard: the backup and
+      // restore must succeed together, without overwriting a concurrent save.
+      let updated;
+      try {
+        const result = await applySceneUpdateTx({
+          prisma,
           drawingId: id,
-          version: drawing.version,
-          elements: encodeSnapshotField(drawing.elements),
-          appState: encodeSnapshotField(drawing.appState),
-          files: encodeSnapshotField(drawing.files),
-        },
-      });
-
-      // Apply snapshot
-      const updated = await prisma.drawing.update({
-        where: { id },
-        data: {
-          elements: restoredElements,
-          appState: restoredAppState,
-          files: restoredFiles,
-          preview: null,
-          version: { increment: 1 },
-        },
-      });
+          parseJsonField,
+          versionGuard: drawing.version,
+          mutate: () => ({
+            data: {
+              elements: restoredElements,
+              appState: restoredAppState,
+              files: restoredFiles,
+              preview: null,
+            },
+          }),
+        });
+        updated = result.drawing;
+      } catch (error) {
+        if (isVersionConflict(error)) {
+          return res.status(409).json({
+            error: "Drawing changed during restore; please try again",
+            code: "VERSION_CONFLICT",
+          });
+        }
+        throw error;
+      }
 
       invalidateDrawingsCache();
 

@@ -48,7 +48,8 @@ type DrawingRow = NonNullable<
 
 type SceneMutation = {
   // Prisma update fields to write (elements/appState/preview/name/collection…),
-  // WITHOUT `version` (owned here) and WITHOUT `files` (union-merged here).
+  // WITHOUT `version` (owned here). Saves pass files through incomingFiles for
+  // union merging; history restores may replace files explicitly in data.
   data: Prisma.DrawingUpdateInput;
   // Already-processed (interned/sanitized) files to union-merge into the
   // authoritative current files. `undefined` leaves files untouched.
