@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   decodeSnapshotField,
   decodeSnapshotPayload,
@@ -23,6 +23,19 @@ const buildScene = (count: number): string =>
   );
 
 describe("snapshot codec", () => {
+  it("does not encode fields that exceed the decoder's byte limit", () => {
+    const scene = buildScene(50);
+    const byteLength = vi
+      .spyOn(Buffer, "byteLength")
+      .mockReturnValue(128 * 1024 * 1024 + 1);
+    try {
+      expect(encodeSnapshotField(scene)).toBe(scene);
+      expect(byteLength).toHaveBeenCalledWith(scene, "utf8");
+    } finally {
+      byteLength.mockRestore();
+    }
+  });
+
   it("round-trips and substantially shrinks a realistic scene", () => {
     const scene = buildScene(500);
     const encoded = encodeSnapshotField(scene);

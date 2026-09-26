@@ -11,6 +11,11 @@ export const isEncodedSnapshotField = (value: string): boolean =>
 
 export const encodeSnapshotField = (value: string, enabled = true): string => {
   if (!enabled || !value || isEncodedSnapshotField(value)) return value;
+  // Keep large fields readable: the decoder intentionally refuses to inflate
+  // more than this limit, but legacy/raw fields are not subject to it.
+  if (Buffer.byteLength(value, "utf8") > MAX_DECOMPRESSED_FIELD_BYTES) {
+    return value;
+  }
 
   try {
     const compressed = brotliCompressSync(Buffer.from(value, "utf8"), {
