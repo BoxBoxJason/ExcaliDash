@@ -54,12 +54,4 @@ export default tseslint.config(
       ],
     },
   },
-  {
-    files: ["**/*.{test,spec}.{ts,tsx}"],
-    languageOptions: {
-      globals: {
-        ...globals.vitest,
-      },
-    },
-  },
 );

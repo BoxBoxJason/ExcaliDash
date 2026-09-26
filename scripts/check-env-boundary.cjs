@@ -16,7 +16,7 @@ const SKIP_DIRS = new Set([
 const NEEDLE = "process.env";
 const isAllowed = (rel) =>
   rel === "backend/src/config.ts" || rel.startsWith("backend/src/config/");
-const isTestFile = (name) => name.endsWith(".test.ts");
+const isTestFile = (name) => name.endsWith(".integration.ts");
 const walk = (dir, files = []) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {

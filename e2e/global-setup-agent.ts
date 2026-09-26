@@ -1,11 +1,12 @@
 import type { FullConfig } from "@playwright/test";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { owner, viewer } from "./fixtures/auth";
 
 const API_URL = process.env.API_URL || "http://localhost:8000";
-const TEST_USER_ID = "agent-e2e-admin";
-const TEST_EMAIL = "agent-e2e@example.test";
-const TEST_PASSWORD = "Agent-E2E-Password-123!";
+const TEST_USER_ID = owner.id;
+const TEST_EMAIL = owner.email;
+const TEST_PASSWORD = owner.password;
 
 const waitForBackend = async () => {
   const deadline = Date.now() + 120_000;
@@ -21,6 +22,9 @@ const waitForBackend = async () => {
 };
 
 export default async function globalSetup(_config: FullConfig) {
+  if (!["127.0.0.1", "localhost"].includes(new URL(API_URL).hostname)) {
+    throw new Error("Authenticated fixtures require the local test backend.");
+  }
   await waitForBackend();
 
   const backendRoot = path.resolve(__dirname, "../backend");
@@ -38,6 +42,19 @@ export default async function globalSetup(_config: FullConfig) {
 
   const prisma = new PrismaClient();
   try {
+    const viewerData = {
+      email: viewer.email,
+      passwordHash: await bcrypt.hash(viewer.password, 10),
+      name: "E2E Viewer",
+      role: "USER",
+      isActive: true,
+      mustResetPassword: false,
+    };
+    await prisma.user.upsert({
+      where: { id: viewer.id },
+      update: viewerData,
+      create: { id: viewer.id, ...viewerData },
+    });
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
     await prisma.systemConfig.upsert({
       where: { id: "default" },
