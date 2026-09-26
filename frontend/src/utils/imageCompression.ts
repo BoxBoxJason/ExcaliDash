@@ -162,7 +162,9 @@ const maybeCompressDataUrl = async (
 
   for (const quality of qualityCandidates) {
     const next = canvas.toDataURL(targetMimeType, quality);
-    if (next.length < best.length) {
+    // Browsers return "data:," when a canvas cannot be encoded (for example
+    // after exceeding implementation limits). Never replace an image with it.
+    if (isDataImageUrl(next) && next.length < best.length) {
       best = next;
     }
   }

@@ -50,6 +50,16 @@ afterEach(() => {
 });
 
 describe("compression MIME detection", () => {
+  it("keeps the original when canvas encoding returns an empty data URL", async () => {
+    toDataURLImpl = () => "data:,";
+    const result = await compressDroppedImagePayload({
+      dataURL: LARGE_INPUT,
+      mimeType: "image/png",
+    });
+    expect(result.changed).toBe(false);
+    expect(result.dataURL).toBe(LARGE_INPUT);
+  });
+
   it("only compresses images above the configured size threshold", async () => {
     localStorage.setItem(IMAGE_COMPRESSION_THRESHOLD_MB_KEY, "1");
     toDataURLImpl = () => `data:image/webp;base64,${"B".repeat(1000)}`;
