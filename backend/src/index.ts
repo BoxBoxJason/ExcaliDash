@@ -698,7 +698,7 @@ if (isMain) {
       backupDir: config.backups.dir,
       retentionDays: config.backups.retentionDays,
     });
-    httpServer.listen(PORT, async () => {
+    httpServer.listen(PORT, config.listenHost, async () => {
       await initializeUploadDir();
       if (config.authMode === "disabled") {
         const line = "!".repeat(72);

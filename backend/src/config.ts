@@ -57,6 +57,7 @@ interface BackupConfig {
 
 interface Config {
   port: number;
+  listenHost: string;
   nodeEnv: string;
   isDev: boolean;
   isProduction: boolean;
@@ -362,6 +363,7 @@ const resolveS3Config = (): S3Config => ({
 
 export const config: Config = {
   port: readNumber("PORT", 8000),
+  listenHost: readString("BACKEND_HOST", "0.0.0.0"),
   nodeEnv: resolvedNodeEnv,
   isDev: resolvedNodeEnv === "development",
   isProduction: resolvedNodeEnv === "production",
