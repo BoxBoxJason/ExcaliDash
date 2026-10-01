@@ -7,6 +7,7 @@ Common settings are listed below. See `backend/src/config/registry/` for all var
 | Variable       | Default       | Purpose                                                              |
 | -------------- | ------------- | -------------------------------------------------------------------- |
 | `PORT`         | `8000`        | Backend HTTP port                                                    |
+| `BACKEND_HOST` | `0.0.0.0`     | Backend listen address; use `127.0.0.1` for a private local server   |
 | `NODE_ENV`     | `development` | Enables production validation and hardening when set to `production` |
 | `FRONTEND_URL` | unset         | Comma-separated allowed frontend origins                             |
 | `TRUST_PROXY`  | `false`       | Express proxy trust; use a positive hop count behind a trusted proxy |
