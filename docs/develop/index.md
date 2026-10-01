@@ -87,9 +87,32 @@ fixed sleeps; fail on rejected requests rather than silently returning. A test
 passing against seeded API data is not a replacement for exercising its key user
 action through the browser.
 
+The integration suite also deploys the released SQLite migration baseline into
+a disposable database, seeds existing drawings, images, history and sharing,
+then applies current migrations twice. It checks that existing data is unchanged
+and the current Prisma client can read it. It never upgrades your development DB.
+
 `NO_SERVER=true` targets explicitly supplied `BASE_URL`/`API_URL` instead. Use it
 only for disposable test deployments, never a production instance. The anonymous
 setup checks authentication is already disabled; it will not disable it for you.
+
+## Release workflow
+
+Pull requests run checks and build images without publishing. A push to `dev`
+publishes `VERSION-dev.<short-sha>` images and a GitHub pre-release; a push to
+`main` publishes `VERSION` images and a stable release. `VERSION` is the single
+source of truth, and stable versions cannot be reused for another commit.
+
+Both versioned images must build and expose Linux amd64 and arm64 manifests
+before CI promotes `:dev` or `:latest`. Publishing runs are not cancelled by
+newer pushes. Registry tag updates are separate operations, not a transaction;
+pin the same versioned tag for both services for repeatable deployments.
+
+Finish local fixes, push `dev` when authorized, and wait for its CI. Update each
+selected contributor branch against that dev, merge passing PRs into dev, and
+pull the resulting dev before opening the release PR to main. Run the final
+checks on that reconciled head. Use a merge commit for dev-to-main so shared
+ancestry is retained. CI fast-forwards dev back to main only if dev has not moved.
 
 ## Work on these docs
 

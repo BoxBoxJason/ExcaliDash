@@ -50,6 +50,10 @@ docker compose -f docker-compose.prod.yml up -d
 
 Compose replaces changed containers while retaining named volumes. Check the service health and logs after every upgrade.
 
+Back up before upgrading. Selecting an older image does not undo database
+migrations or changes to stored data formats; a rollback may also require
+restoring the matching database backup.
+
 ## Operational checklist
 
 - HTTPS is enforced at the edge.
