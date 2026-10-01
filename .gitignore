@@ -78,6 +78,7 @@ docker-volumes/
 # VitePress
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+artifacts/docs-review/
 artifacts/marketing/
 
 # Logs

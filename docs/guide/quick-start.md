@@ -10,15 +10,21 @@ Run ExcaliDash with Docker Compose.
 
 ## Start ExcaliDash
 
-Clone the repository and start the published images:
+1. Clone the repository:
 
-```bash
-git clone https://github.com/ZimengXiong/ExcaliDash.git
-cd ExcaliDash
-docker compose -f docker-compose.prod.yml up -d
-```
+   ```bash
+   git clone https://github.com/ZimengXiong/ExcaliDash.git
+   cd ExcaliDash
+   ```
 
-Open `http://localhost:6767` and create the administrator account.
+2. Start the services:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+3. Open `http://localhost:6767`.
+4. [Create the administrator account](/guide/first-run#create-the-administrator).
 
 ::: tip Data persists between restarts
 SQLite data and generated secrets are stored in `backend-data`. The `down` command preserves this volume; adding `-v` deletes it.
@@ -39,4 +45,4 @@ Both services have health checks. Port `6767` serves the frontend and proxies ba
 docker compose -f docker-compose.prod.yml down
 ```
 
-Next: [First run](/guide/first-run) or [Docker deployment](/deploy/docker).
+Continue with [your workspace](/guide/workspace). For a server deployment, see [Deploy with Docker Compose](/deploy/docker).

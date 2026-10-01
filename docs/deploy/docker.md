@@ -1,14 +1,20 @@
 # Deploy with Docker Compose
 
-`docker-compose.prod.yml` runs the frontend, backend, and a persistent SQLite volume.
+Deploy the frontend and backend with a persistent SQLite database. Complete the [quick start](/guide/quick-start) first.
 
 ## Select an image version
 
-The `EXCALIDASH_TAG` value selects both images:
+Set the image tag in the root `.env`:
+
+```dotenv
+EXCALIDASH_TAG=latest
+```
+
+Pull and start both images:
 
 ```bash
-EXCALIDASH_TAG=latest docker compose -f docker-compose.prod.yml pull
-EXCALIDASH_TAG=latest docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 Pin a release for repeatable deployments. Use the same version for both images.
@@ -17,29 +23,46 @@ Pin a release for repeatable deployments. Use the same version for both images.
 
 Route HTTPS traffic to container port `8080` or host port `6767`. The frontend proxies API and real-time traffic to the backend.
 
-Set `TRUST_PROXY` to the number of trusted proxy hops:
+Create `compose.override.yml` with your public origin and the number of trusted proxy hops:
 
 ```yaml
-environment:
-  - TRUST_PROXY=1
-  - FRONTEND_URL=https://draw.example.com
+services:
+  backend:
+    environment:
+      FRONTEND_URL: https://draw.example.com
+      TRUST_PROXY: "1"
 ```
+
+Replace `https://draw.example.com` with your URL. The hop count must match your proxy chain. Your proxies must replace untrusted forwarding headers and forward WebSocket upgrades for `/socket.io/`.
+
+Apply the override:
+
+```bash
+docker compose -f docker-compose.prod.yml -f compose.override.yml up -d
+```
+
+Use both `-f` flags for later commands if you use an override.
 
 ## Persist and back up data
 
-Back up `backend-data` with writes paused. For scheduled backups, mount a separate volume:
+The `backend-data` volume holds SQLite data, image records, and generated signing secrets. Scheduled backups copy the SQLite database; save your signing secrets separately.
+
+Add these entries to `compose.override.yml` to enable daily database backups at 04:00 in the container's timezone:
 
 ```yaml
-environment:
-  - BACKUP_SCHEDULE=0 0 4 * * *
-  - BACKUP_DIR=/app/backups
-  - BACKUP_RETENTION_DAYS=14
+services:
+  backend:
+    environment:
+      BACKUP_SCHEDULE: "0 0 4 * * *"
+      BACKUP_DIR: /app/backups
+      BACKUP_RETENTION_DAYS: "14"
+    volumes:
+      - backup-data:/app/backups
 volumes:
-  - backend-data:/app/prisma
-  - backup-data:/app/backups
+  backup-data:
 ```
 
-Test restoring a backup.
+Apply the override, check the backend logs for backup errors, and test restoring a backup. For PostgreSQL, use your database's backup tools. If you use S3, back up its objects too.
 
 ## Upgrade
 

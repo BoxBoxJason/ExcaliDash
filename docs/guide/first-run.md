@@ -1,6 +1,6 @@
 # First run
 
-Local authentication is enabled by default.
+Create the administrator account before inviting other users. The default authentication mode is `local`.
 
 ## Choose an authentication mode
 
@@ -19,12 +19,23 @@ Local authentication is enabled by default.
 
 For the default `local` mode:
 
-1. Open the frontend URL.
-2. Create the administrator account.
-3. Sign in with that account.
-4. Add users in **Admin**.
+1. Open your ExcaliDash URL and select **Create account**.
+2. If the form asks for a one-time setup code, read the backend logs:
 
-For OIDC, configure the provider first. Set `OIDC_FIRST_USER_ADMIN=true` to make the first OIDC user an administrator.
+   ```bash
+   docker compose -f docker-compose.prod.yml logs --tail=200 backend
+   ```
+
+   Find the entry labeled `BOOTSTRAP SETUP`. In local development, the code appears in the backend terminal.
+
+3. Enter the code, your account details, and a password that meets the form's requirements.
+4. Select **Create account**. Use this account to manage the instance.
+
+Setup codes expire after 15 minutes by default. If a code expires, restart the backend and read the new code from its logs.
+
+To add an account, open **Admin** and select **New user**. To let people register themselves, enable registration in **Admin**.
+
+For OpenID Connect (OIDC), [configure the provider](/guide/authentication#configure-openid-connect) before signing in. `OIDC_FIRST_USER_ADMIN=true` makes the first provisioned OIDC user an administrator.
 
 ## Your workspace
 
@@ -48,4 +59,4 @@ Before exposing ExcaliDash beyond a local machine:
 - Persist the database and test a restore procedure.
 - Keep frontend and backend image tags aligned.
 
-See [Configuration](/guide/configuration).
+Next: [Use your workspace](/guide/workspace) or [configure authentication](/guide/authentication).

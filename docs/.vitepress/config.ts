@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { docsReviewPlugin } from "./review/plugin.mjs";
 
 export default defineConfig({
   title: "ExcaliDash",
@@ -6,8 +7,9 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   vite: {
+    plugins: [docsReviewPlugin()],
     server: {
-      allowedHosts: ["small-lake-3h.v3c.dev"],
+      allowedHosts: [".v3c.dev"],
     },
   },
   head: [
@@ -29,6 +31,8 @@ export default defineConfig({
         items: [
           { text: "Quick start", link: "/guide/quick-start" },
           { text: "First run", link: "/guide/first-run" },
+          { text: "Your workspace", link: "/guide/workspace" },
+          { text: "Authentication", link: "/guide/authentication" },
           { text: "Configuration", link: "/guide/configuration" },
         ],
       },
@@ -38,7 +42,10 @@ export default defineConfig({
       },
       {
         text: "Develop",
-        items: [{ text: "Local development", link: "/develop/" }],
+        items: [
+          { text: "Local development", link: "/develop/" },
+          { text: "Review the docs", link: "/develop/docs-review" },
+        ],
       },
       {
         text: "Reference",

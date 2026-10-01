@@ -24,7 +24,7 @@ Express handles authentication, access control, storage, sharing, and history. E
 
 ## Storage
 
-Prisma supports SQLite (default) and PostgreSQL. Store drawing files locally or in object storage.
+Prisma supports SQLite (default) and PostgreSQL. Image bytes are stored in database records by default. Setting `S3_BUCKET` moves new image storage to S3 or an S3-compatible service.
 
 ## Deployment boundary
 
