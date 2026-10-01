@@ -62,7 +62,14 @@ volumes:
   backup-data:
 ```
 
-Apply the override, check the backend logs for backup errors, and test restoring a backup. For PostgreSQL, use your database's backup tools. If you use S3, back up its objects too.
+Initialize the backup volume for the backend's user (UID 1001), then apply the override:
+
+```bash
+docker compose -f docker-compose.prod.yml -f compose.override.yml run --rm --no-deps --user 0 --entrypoint sh backend -c 'chown 1001:1001 /app/backups'
+docker compose -f docker-compose.prod.yml -f compose.override.yml up -d
+```
+
+Check the backend logs for backup errors and test restoring a backup. For PostgreSQL, use your database's backup tools. If you use S3, back up its objects too.
 
 ## Upgrade
 
