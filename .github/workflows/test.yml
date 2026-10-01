@@ -9,7 +9,8 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  # Publishing runs must finish promoting both images; superseded PR checks can stop.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -184,11 +185,6 @@ jobs:
           build_label="${image_tag}"
 
           tags="type=raw,value=${image_tag}"
-          if [ "$publish" = true ] && [ "$stable" = true ]; then
-            tags="${tags}"$'\n'"type=raw,value=latest"
-          elif [ "$publish" = true ]; then
-            tags="${tags}"$'\n'"type=raw,value=dev"
-          fi
 
           {
             echo "version=$version"
@@ -279,8 +275,29 @@ jobs:
         if: needs.release-metadata.outputs.publish == 'true'
         shell: bash
         run: |
-          docker buildx imagetools inspect "${DOCKERHUB_USERNAME}/excalidash-backend:${{ needs.release-metadata.outputs.image-tag }}"
-          docker buildx imagetools inspect "${DOCKERHUB_USERNAME}/excalidash-frontend:${{ needs.release-metadata.outputs.image-tag }}"
+          for component in backend frontend; do
+            image="${DOCKERHUB_USERNAME}/excalidash-${component}:${{ needs.release-metadata.outputs.image-tag }}"
+            docker buildx imagetools inspect "$image" --raw | jq -e '
+              [.manifests[].platform | select(.os == "linux") | .architecture] as $architectures
+              | ($architectures | index("amd64") != null) and ($architectures | index("arm64") != null)
+            '
+          done
+
+      - name: Promote verified image pair
+        if: needs.release-metadata.outputs.publish == 'true'
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          FLOATING_TAG: ${{ needs.release-metadata.outputs.stable == 'true' && 'latest' || 'dev' }}
+        shell: bash
+        run: |
+          printf '%s' "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+          trap 'docker logout >/dev/null 2>&1' EXIT
+          for component in backend frontend; do
+            image="${DOCKERHUB_USERNAME}/excalidash-${component}"
+            docker buildx imagetools create \
+              --tag "${image}:${FLOATING_TAG}" \
+              "${image}:${{ needs.release-metadata.outputs.image-tag }}"
+          done
 
       - name: Confirm CI image builds
         if: needs.release-metadata.outputs.publish != 'true'
