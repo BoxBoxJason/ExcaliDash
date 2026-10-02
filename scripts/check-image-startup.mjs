@@ -35,6 +35,8 @@ try {
     "--env",
     "AUTH_MODE=local",
     "--env",
+    "DATABASE_URL=file:/app/prisma/dev.db",
+    "--env",
     "FRONTEND_URL=https://first.example.test,https://second.example.test",
     "--env",
     "TRUST_PROXY=1",
