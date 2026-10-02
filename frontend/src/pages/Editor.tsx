@@ -10,7 +10,6 @@ import { useEditorAutoHide } from "./editor/useEditorAutoHide";
 import { useEditorIdentity } from "./editor/useEditorIdentity";
 import { EditorDialogs } from "./editor/EditorDialogs";
 import { EditorView } from "./editor/EditorView";
-import { ChatPanel } from "./editor/ChatPanel";
 import { useLibraryImportFromUrl } from "./editor/useLibraryImportFromUrl";
 import { useEditorSnapshotGuards } from "./editor/useEditorSnapshotGuards";
 import { useEditorSceneLoader } from "./editor/useEditorSceneLoader";
@@ -106,7 +105,6 @@ const ExcalidrawEditor: React.FC = () => {
   const lastLocalChangeAtRef = useRef<number>(0);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const excalidrawAPI = useRef<any>(null);
-  const selfAgentBatchIdsRef = useRef<Set<string>>(new Set());
   const { resolveSafeSnapshot, normalizeImageElementStatus } =
     useEditorSnapshotGuards({
       lastPersistedElementsRef,
@@ -139,7 +137,6 @@ const ExcalidrawEditor: React.FC = () => {
       computeElementOrderSig,
       recordElementVersion,
       onAccessDenied: handleSocketAccessDenied,
-      selfAgentBatchIdsRef,
     });
   const { scanNow: scanFileUploads } = useEditorFileUploads({
     drawingId: id,
@@ -382,11 +379,6 @@ const ExcalidrawEditor: React.FC = () => {
         isHistoryOpen={isHistoryOpen}
         previewBackupRef={previewBackup}
         onCloseHistory={() => setIsHistoryOpen(false)}
-      />
-      <ChatPanel
-        drawingId={id}
-        canEdit={canEdit}
-        selfAgentBatchIdsRef={selfAgentBatchIdsRef}
       />
     </>
   );

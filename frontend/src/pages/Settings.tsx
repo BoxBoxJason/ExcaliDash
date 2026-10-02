@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Layout } from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api";
@@ -10,8 +10,6 @@ import { SettingsMainGrid } from "./settings/SettingsMainGrid";
 import { AdvancedSettings } from "./settings/AdvancedSettings";
 import { SettingsConfirmModals } from "./settings/SettingsConfirmModals";
 import { ApiKeysCard } from "./profile/ApiKeysCard";
-import { AiSettingsCard } from "./admin/AiSettingsCard";
-import { useAiSettings } from "./admin/useAiSettings";
 import { Toaster } from "sonner";
 import { displayFontFamily } from "../utils/displayFont";
 import {
@@ -34,8 +32,6 @@ export const Settings: React.FC = () => {
     "editorAutoHide",
     true,
   );
-  const isSingleUserOwner = authEnabled === false;
-  const isAdmin = isSingleUserOwner || user?.role === "ADMIN";
   const mustResetPassword = Boolean(user?.mustResetPassword);
   const [settingsSuccess, setSettingsSuccess] = useState("");
   const [legacyDbImportConfirmation, setLegacyDbImportConfirmation] = useState<{
@@ -59,15 +55,6 @@ export const Settings: React.FC = () => {
   const [legacyDbImportLoading, setLegacyDbImportLoading] = useState(false);
   const [authToggleLoading, setAuthToggleLoading] = useState(false);
   const [authToggleError, setAuthToggleError] = useState<string | null>(null);
-  const setAiError = useCallback(
-    (message: string) => setAuthToggleError(message || null),
-    [],
-  );
-  const aiSettings = useAiSettings({
-    authEnabled,
-    isAdmin,
-    setError: setAiError,
-  });
   const [authToggleConfirm, setAuthToggleConfirm] = useState<{
     isOpen: boolean;
     nextEnabled: boolean | null;
@@ -352,7 +339,7 @@ export const Settings: React.FC = () => {
           </div>
         )}{" "}
         {settingsSuccess && (
-          <div className="mb-6 rounded-xl border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+          <div className="mb-6 rounded-xl border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
             <p className="font-medium text-green-800 dark:text-green-200">
               {settingsSuccess}
             </p>
@@ -362,25 +349,6 @@ export const Settings: React.FC = () => {
           <ApiKeysCard
             disabled={mustResetPassword}
             onSuccess={setSettingsSuccess}
-          />
-          <AiSettingsCard
-            loading={aiSettings.loading}
-            saving={aiSettings.saving}
-            provider={aiSettings.provider}
-            baseUrl={aiSettings.baseUrl}
-            model={aiSettings.model}
-            apiKey={aiSettings.apiKey}
-            chatgptEnabled={aiSettings.chatgptEnabled}
-            status={aiSettings.status}
-            envKeyConfigured={aiSettings.envKeyConfigured}
-            dbKeyConfigured={aiSettings.dbKeyConfigured}
-            onProviderChange={aiSettings.setProvider}
-            onBaseUrlChange={aiSettings.setBaseUrl}
-            onModelChange={aiSettings.setModel}
-            onApiKeyChange={aiSettings.setApiKey}
-            onChatgptEnabledChange={aiSettings.setChatgptEnabled}
-            onSave={aiSettings.save}
-            onClearDbKey={aiSettings.clearDbKey}
           />
         </div>
         <div className="mt-10">

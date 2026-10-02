@@ -37,7 +37,7 @@ export default async function globalSetup(_config: FullConfig) {
   };
   process.env.DATABASE_URL = `file:${path.join(
     backendRoot,
-    "prisma/agent-e2e.db",
+    "prisma/auth-e2e.db",
   )}`;
 
   const prisma = new PrismaClient();
@@ -62,16 +62,12 @@ export default async function globalSetup(_config: FullConfig) {
         authEnabled: true,
         authOnboardingCompleted: true,
         registrationEnabled: false,
-        aiProvider: "chatgpt",
-        aiChatgptEnabled: true,
       },
       create: {
         id: "default",
         authEnabled: true,
         authOnboardingCompleted: true,
         registrationEnabled: false,
-        aiProvider: "chatgpt",
-        aiChatgptEnabled: true,
       },
     });
     await prisma.user.upsert({
@@ -79,7 +75,7 @@ export default async function globalSetup(_config: FullConfig) {
       update: {
         email: TEST_EMAIL,
         passwordHash,
-        name: "Agent E2E Admin",
+        name: "E2E Admin",
         role: "ADMIN",
         isActive: true,
         mustResetPassword: false,
@@ -88,7 +84,7 @@ export default async function globalSetup(_config: FullConfig) {
         id: TEST_USER_ID,
         email: TEST_EMAIL,
         passwordHash,
-        name: "Agent E2E Admin",
+        name: "E2E Admin",
         role: "ADMIN",
         isActive: true,
         mustResetPassword: false,
@@ -99,7 +95,7 @@ export default async function globalSetup(_config: FullConfig) {
   }
 }
 
-export const agentE2eCredentials = {
+export const authE2eCredentials = {
   email: TEST_EMAIL,
   password: TEST_PASSWORD,
 };

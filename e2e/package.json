@@ -9,9 +9,8 @@
   "scripts": {
     "test": "playwright test",
     "check": "tsc --noEmit",
-    "test:auth": "E2E_AGENT_AUTH=true playwright test",
-    "test:agent": "E2E_AGENT_AUTH=true playwright test tests/agent-api.spec.ts",
-    "screenshots:review": "E2E_AGENT_AUTH=true UI_REVIEW_SCREENSHOTS=true playwright test tests/ui-review.spec.ts",
+    "test:auth": "E2E_AUTH=true playwright test",
+    "screenshots:review": "E2E_AUTH=true UI_REVIEW_SCREENSHOTS=true playwright test tests/ui-review.spec.ts",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",

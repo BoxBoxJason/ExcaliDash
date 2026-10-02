@@ -174,8 +174,8 @@ export const ApiKeysCard: React.FC<Props> = ({ disabled, onSuccess }) => {
             API key management is unavailable until you reset your password.
           </p>
           <p className="text-xs text-amber-800 dark:text-amber-200 font-medium mt-0.5">
-            Change your password below, then return here to create and manage
-            API keys.
+            Change your password in Profile, then return here to create and
+            manage API keys.
           </p>
         </div>
       ) : (

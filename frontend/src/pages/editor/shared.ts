@@ -72,8 +72,7 @@ type BuildRemoteSceneUpdateInput = {
   incomingFiles?: Record<string, any>;
   /**
    * Undo-stack behavior for element updates. Remote peer edits default to
-   * NEVER (not locally undoable); a self-originated agent batch replayed to the
-   * requesting editor passes IMMEDIATELY so native Ctrl+Z works (D5).
+   * NEVER so another user's edits are not added to this editor's undo stack.
    */
   captureUpdate?: CaptureMode;
 };

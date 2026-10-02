@@ -5,8 +5,8 @@ const BACKEND_PORT = 28000;
 const FRONTEND_URL =
   process.env.BASE_URL || `http://127.0.0.1:${FRONTEND_PORT}`;
 const BACKEND_URL = process.env.API_URL || `http://127.0.0.1:${BACKEND_PORT}`;
-const AGENT_AUTH = process.env.E2E_AGENT_AUTH === "true";
-const mode = AGENT_AUTH ? "authenticated" : "anonymous";
+const AUTHENTICATED = process.env.E2E_AUTH === "true";
+const mode = AUTHENTICATED ? "authenticated" : "anonymous";
 const frontendRuntimePort = new URL(FRONTEND_URL).port || "80";
 const backendRuntimePort = new URL(BACKEND_URL).port || "80";
 // Share resolved URLs with setup and API helpers, including custom local ports.
@@ -23,22 +23,14 @@ process.env.API_URL = BACKEND_URL;
  */
 export default defineConfig({
   testDir: "./tests",
-  testMatch: AGENT_AUTH
-    ? [
-        "**/agent-api.spec.ts",
-        "**/auth-workflows.spec.ts",
-        "**/ui-review.spec.ts",
-      ]
+  testMatch: AUTHENTICATED
+    ? ["**/auth-workflows.spec.ts", "**/ui-review.spec.ts"]
     : "**/*.spec.ts",
-  testIgnore: AGENT_AUTH
+  testIgnore: AUTHENTICATED
     ? []
-    : [
-        "**/agent-api.spec.ts",
-        "**/auth-workflows.spec.ts",
-        "**/ui-review.spec.ts",
-      ],
+    : ["**/auth-workflows.spec.ts", "**/ui-review.spec.ts"],
 
-  globalSetup: AGENT_AUTH ? "./global-setup-agent" : "./global-setup",
+  globalSetup: AUTHENTICATED ? "./global-setup-auth" : "./global-setup",
 
   // The suite uses one backend SQLite database and performs broad cleanup by
   // naming convention, so running tests concurrently creates cross-test leaks.
@@ -106,18 +98,17 @@ export default defineConfig({
             stdout: "pipe",
             stderr: "pipe",
             env: {
-              DATABASE_URL: AGENT_AUTH
-                ? "file:./agent-e2e.db"
+              DATABASE_URL: AUTHENTICATED
+                ? "file:./auth-e2e.db"
                 : "file:./e2e-test.db",
               PORT: backendRuntimePort,
               FRONTEND_URL,
-              AUTH_MODE: AGENT_AUTH ? "local" : "disabled",
+              AUTH_MODE: AUTHENTICATED ? "local" : "disabled",
               S3_BUCKET: "",
               CSRF_MAX_REQUESTS: "100000",
               RATE_LIMIT_MAX_REQUESTS: "100000",
               CSRF_SECRET: "e2e-csrf-secret",
               JWT_SECRET: "e2e-jwt-secret-that-is-long-enough-for-tests",
-              AI_PROVIDER: AGENT_AUTH ? "chatgpt" : "disabled",
             },
           },
           {

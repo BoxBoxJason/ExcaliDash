@@ -116,7 +116,7 @@ jobs:
       - name: Run real browser and API journeys
         run: npm --prefix e2e test
         env:
-          E2E_AGENT_AUTH: ${{ matrix.mode == 'authenticated' && 'true' || 'false' }}
+          E2E_AUTH: ${{ matrix.mode == 'authenticated' && 'true' || 'false' }}
 
       - name: Upload browser diagnostics
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

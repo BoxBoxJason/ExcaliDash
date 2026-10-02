@@ -18,7 +18,6 @@ const env = {
   JWT_SECRET: randomBytes(32).toString("hex"),
   CSRF_SECRET: randomBytes(32).toString("hex"),
   UPDATE_CHECK_OUTBOUND: "false",
-  AI_PROVIDER: "disabled",
   RATE_LIMIT_MAX_REQUESTS: "100000",
   CSRF_MAX_REQUESTS: "100000",
   VITE_DEV_BACKEND_URL: "http://127.0.0.1:8107",
