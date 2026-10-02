@@ -96,6 +96,7 @@ const imageUrl = (theme: "light" | "dark") =>
   display: grid;
   gap: 12px;
   align-items: center;
+  transform: translateY(clamp(8px, 2dvh, 24px));
 }
 
 h1 {
