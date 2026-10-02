@@ -169,19 +169,19 @@ export const ApiKeysCard: React.FC<Props> = ({ disabled, onSuccess }) => {
       />
 
       {disabled ? (
-        <div className="p-3.5 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl">
+        <div className="p-3.5 bg-amber-50 dark:bg-amber-950 border-2 border-amber-200 dark:border-amber-800 rounded-xl">
           <p className="text-amber-900 dark:text-amber-200 font-bold">
             API key management is unavailable until you reset your password.
           </p>
-          <p className="text-xs text-amber-800 dark:text-amber-200/80 font-medium mt-0.5">
-            Change your password below, then return here to create and manage
-            API keys.
+          <p className="text-xs text-amber-800 dark:text-amber-200 font-medium mt-0.5">
+            Change your password in Profile, then return here to create and
+            manage API keys.
           </p>
         </div>
       ) : (
         <>
           {error && (
-            <div className="mb-3 p-3.5 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl">
+            <div className="mb-3 p-3.5 bg-red-50 dark:bg-red-950 border-2 border-red-200 dark:border-red-800 rounded-xl">
               <p className="text-red-800 dark:text-red-200 font-medium">
                 {error}
               </p>
@@ -190,13 +190,13 @@ export const ApiKeysCard: React.FC<Props> = ({ disabled, onSuccess }) => {
           <SettingsCard>
             {generatedToken && (
               <div
-                className="bg-amber-50 px-4 py-3.5 dark:bg-amber-900/20 sm:px-5"
+                className="border-l-4 border-amber-500 bg-slate-50 px-4 py-3.5 dark:bg-neutral-800 sm:px-5"
                 aria-live="polite"
               >
-                <p className="text-amber-900 dark:text-amber-200 font-bold">
+                <p className="text-slate-900 dark:text-white font-bold">
                   Copy this token now. You will not be able to see it again.
                 </p>
-                <p className="text-xs text-amber-800 dark:text-amber-200/80 font-medium mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-neutral-300 font-medium mt-0.5">
                   New API key: {generatedTokenName}
                 </p>
                 <div className="mt-3 flex flex-col sm:flex-row gap-2">

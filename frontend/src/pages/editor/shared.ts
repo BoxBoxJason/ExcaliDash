@@ -72,8 +72,7 @@ type BuildRemoteSceneUpdateInput = {
   incomingFiles?: Record<string, any>;
   /**
    * Undo-stack behavior for element updates. Remote peer edits default to
-   * NEVER (not locally undoable); a self-originated agent batch replayed to the
-   * requesting editor passes IMMEDIATELY so native Ctrl+Z works (D5).
+   * NEVER so another user's edits are not added to this editor's undo stack.
    */
   captureUpdate?: CaptureMode;
 };
@@ -330,7 +329,8 @@ export const UIOptions = {
     saveToActiveFile: false,
     loadScene: false,
     export: false,
-    toggleTheme: true,
+    // App preference owns the theme; disable Excalidraw's independent action.
+    toggleTheme: false,
   },
 } as const;
 

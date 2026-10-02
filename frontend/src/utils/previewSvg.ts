@@ -1,3 +1,6 @@
+export const isDefaultPreviewBackground = (color?: string | null): boolean =>
+  !color || ["white", "#fff", "#ffffff"].includes(color.trim().toLowerCase());
+
 const parseDimension = (value: string | null): number | null => {
   if (!value) return null;
   const parsed = Number.parseFloat(value);
@@ -111,6 +114,60 @@ export const normalizePreviewSvg = (
     }
 
     maybeRepairFlattenedImagePreview(svg as unknown as SVGSVGElement);
+
+    // Excalidraw puts the canvas rect before all scene artwork. Only remove
+    // its default white fill, never white shapes or explicitly colored canvases.
+    const firstDrawable = Array.from(svg.children).find(
+      (node) =>
+        !["metadata", "defs", "style", "title", "desc"].includes(
+          node.tagName.toLowerCase(),
+        ),
+    );
+    const bounds = parseViewBox(svg.getAttribute("viewBox"));
+    if (
+      firstDrawable?.tagName.toLowerCase() === "rect" &&
+      bounds &&
+      firstDrawable.hasAttribute("fill") &&
+      isDefaultPreviewBackground(firstDrawable.getAttribute("fill")) &&
+      firstDrawable.getAttribute("x") === "0" &&
+      firstDrawable.getAttribute("y") === "0" &&
+      isNear(
+        parseDimension(firstDrawable.getAttribute("width")) ?? -1,
+        bounds.width,
+      ) &&
+      isNear(
+        parseDimension(firstDrawable.getAttribute("height")) ?? -1,
+        bounds.height,
+      )
+    ) {
+      firstDrawable.setAttribute("fill", "transparent");
+    }
+
+    // Match Excalidraw's SVG exporter, but let the app's theme own presentation.
+    // Strip its known legacy export filters to avoid applying dark mode twice.
+    if (svg.getAttribute("filter") === "invert(93%) hue-rotate(180deg)") {
+      svg.removeAttribute("filter");
+    }
+    for (const node of svg.querySelectorAll("use, image")) {
+      if (
+        node.getAttribute("filter") ===
+        "invert(100%) hue-rotate(180deg) saturate(1.25)"
+      )
+        node.removeAttribute("filter");
+      const href =
+        node.getAttribute("href") || node.getAttribute("xlink:href") || "";
+      const image =
+        node.tagName.toLowerCase() === "image"
+          ? node
+          : href.startsWith("#")
+            ? doc.getElementById(href.slice(1))?.querySelector("image")
+            : null;
+      const source =
+        image?.getAttribute("href") || image?.getAttribute("xlink:href") || "";
+      if (/^data:image\/(?!svg\+xml)/i.test(source) && !node.closest("defs")) {
+        node.setAttribute("data-preview-raster", "true");
+      }
+    }
 
     return svg.outerHTML;
   } catch {

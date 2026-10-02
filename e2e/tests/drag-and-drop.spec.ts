@@ -11,7 +11,7 @@ import {
 /**
  * E2E Tests for Drag and Drop functionality
  *
- * Tests the drag and drop feature mentioned in README:
+ * Covers drag and drop behavior:
  * - Drag drawings into collections
  * - Drag files to import drawings
  * - Drag multiple selected drawings

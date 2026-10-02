@@ -27,13 +27,10 @@ import { authModeService, requireAuth, optionalAuth } from "./middleware/auth";
 import { errorHandler, asyncHandler } from "./middleware/errorHandler";
 import authRouter from "./auth";
 import { logAuditEvent } from "./utils/audit";
-import { stopLayoutWorker } from "./agent/layoutRunner";
 import { registerDashboardRoutes } from "./routes/dashboard";
 import { registerImportExportRoutes } from "./routes/importExport";
 import { registerSystemRoutes } from "./routes/system";
 import { registerFileRoutes } from "./routes/files";
-import { registerAiRoutes } from "./ai/chatRoute";
-import { DEFAULT_SYSTEM_CONFIG_ID } from "./auth/authMode";
 import { registerStorageRoutes } from "./routes/storage";
 import { prisma, configureSqlite } from "./db/prisma";
 import {
@@ -588,22 +585,8 @@ registerDashboardRoutes(app, {
     internDrawingFilesWithPrisma(files, userId, drawingId, prisma),
   revalidateDrawingAccess: socketHandlers.revalidateDrawingAccess,
   io,
-  agentOps: {
-    rateLimitMaxRequests: config.agentOpsRateLimitMax,
-    rateLimitWindowMs: config.agentOpsRateLimitWindowMs,
-  },
 });
 registerFileRoutes(app, { prisma, requireAuth, optionalAuth, asyncHandler });
-registerAiRoutes(app, {
-  prisma,
-  requireAuth,
-  asyncHandler,
-  parseJsonField,
-  invalidateDrawingsCache,
-  logAuditEvent,
-  io,
-  defaultSystemConfigId: DEFAULT_SYSTEM_CONFIG_ID,
-});
 registerStorageRoutes(app, {
   prisma,
   requireAuth,
@@ -666,7 +649,6 @@ if (isMain) {
     shuttingDown = true;
     console.log(`[shutdown] Received ${signal}, shutting down gracefully`);
     clearInterval(snapshotCleanupTimer);
-    void stopLayoutWorker().catch(() => {});
     const forceExit = setTimeout(() => {
       console.error("[shutdown] Forced exit after timeout");
       process.exit(1);
@@ -689,7 +671,7 @@ if (isMain) {
   process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
   process.on("SIGINT", () => gracefulShutdown("SIGINT"));
   void (async () => {
-    configureSecuritySettings({ maxDataUrlSize: config.uploadMaxBytes });
+    configureSecuritySettings({ maxDataUrlSize: config.fileUploadMaxBytes });
     await configureSqlite();
     startScheduledBackups({
       prisma,
@@ -698,7 +680,7 @@ if (isMain) {
       backupDir: config.backups.dir,
       retentionDays: config.backups.retentionDays,
     });
-    httpServer.listen(PORT, async () => {
+    httpServer.listen(PORT, config.listenHost, async () => {
       await initializeUploadDir();
       if (config.authMode === "disabled") {
         const line = "!".repeat(72);

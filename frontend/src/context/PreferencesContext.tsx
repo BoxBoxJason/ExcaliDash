@@ -23,6 +23,7 @@ const KNOWN_KEYS: PreferenceKey[] = [
   "dashboardSortDirection",
   "language",
   "gridStep",
+  "editorAutoHide",
 ];
 
 const pickKnown = (source: Partial<Preferences>): Preferences => {
@@ -120,6 +121,8 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({
   // preferences apply on login/switch without a hard refresh.
   useEffect(() => {
     let cancelled = false;
+    hydratedRef.current = false;
+    lastPersistedRef.current = {};
     api
       .getUserPreferences()
       .then((serverPreferences) => {
@@ -167,8 +170,15 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     }
     if (Object.keys(toWrite).length > 0) {
+      const persisted = lastPersistedRef.current;
       api.updateUserPreferences(toWrite).catch(() => {
-        // Keep the local preference even when anonymous/offline.
+        // Failed saves must be retryable. Leave newer changes and a different
+        // account's synchronization state alone.
+        for (const key of Object.keys(toWrite) as PreferenceKey[]) {
+          if (persisted[key] === JSON.stringify(toWrite[key])) {
+            delete persisted[key];
+          }
+        }
       });
     }
   }, []);

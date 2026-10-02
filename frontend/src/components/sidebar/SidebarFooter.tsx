@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { UserAvatar } from "../UserAvatar";
+import { useLocale } from "../../context/useLocale";
 
 type UserLike =
   | {
@@ -43,6 +44,7 @@ export const SidebarFooter: React.FC<SidebarFooterProps> = ({
   onLogout,
 }) => {
   const navigate = useNavigate();
+  const { t } = useLocale();
   const [isTrashDragOver, setIsTrashDragOver] = useState(false);
   const isAdmin = user?.role === "ADMIN";
 
@@ -68,7 +70,7 @@ export const SidebarFooter: React.FC<SidebarFooterProps> = ({
         )}
       >
         <Trash2 size={18} />
-        <span className="min-w-0 flex-1 text-left">Trash</span>
+        <span className="min-w-0 flex-1 text-left">{t("sidebar.trash")}</span>
       </button>
 
       {authEnabled !== null && (
@@ -77,7 +79,9 @@ export const SidebarFooter: React.FC<SidebarFooterProps> = ({
           className={footerButtonClass(selectedCollectionId === "PROFILE")}
         >
           <User size={18} />
-          <span className="min-w-0 flex-1 text-left">Profile</span>
+          <span className="min-w-0 flex-1 text-left">
+            {t("sidebar.profile")}
+          </span>
         </button>
       )}
 
@@ -87,7 +91,7 @@ export const SidebarFooter: React.FC<SidebarFooterProps> = ({
           className={footerButtonClass(selectedCollectionId === "ADMIN")}
         >
           <Shield size={18} />
-          <span className="min-w-0 flex-1 text-left">Admin</span>
+          <span className="min-w-0 flex-1 text-left">{t("sidebar.admin")}</span>
         </button>
       )}
 
@@ -96,7 +100,9 @@ export const SidebarFooter: React.FC<SidebarFooterProps> = ({
         className={footerButtonClass(selectedCollectionId === "SETTINGS")}
       >
         <SettingsIcon size={18} />
-        <span className="min-w-0 flex-1 text-left">Settings</span>
+        <span className="min-w-0 flex-1 text-left">
+          {t("sidebar.settings")}
+        </span>
       </button>
 
       {authEnabled && (
@@ -123,7 +129,9 @@ export const SidebarFooter: React.FC<SidebarFooterProps> = ({
             className="ui-button-secondary w-full justify-start text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30"
           >
             <LogOut size={18} />
-            <span className="min-w-0 flex-1 text-left">Logout</span>
+            <span className="min-w-0 flex-1 text-left">
+              {t("sidebar.logout")}
+            </span>
           </button>
         </div>
       )}

@@ -1,3 +1,8 @@
+import {
+  readImageCompressionEnabled,
+  readImageCompressionThresholdMb,
+} from "./imageCompressionSettings";
+
 export type ExcalidrawFileRecord = {
   id?: string;
   dataURL?: string;
@@ -14,7 +19,6 @@ export type CompressionResult = {
   changed: boolean;
 };
 
-const DEFAULT_MIN_DATA_URL_LENGTH = 350_000;
 const DEFAULT_MAX_DIMENSION = 2800;
 const DEFAULT_MIN_IMPROVEMENT_RATIO = 0.9;
 
@@ -83,24 +87,19 @@ const getTargetMimeType = (originalMimeType: string): string => {
   return "image/webp";
 };
 
-const COMPRESSION_ENABLED_KEY = "excalidash-image-compression";
-
-const isCompressionEnabled = (): boolean => {
-  if (typeof window === "undefined") return true;
-  const raw = window.localStorage?.getItem?.(COMPRESSION_ENABLED_KEY);
-  return raw !== "false";
+const estimateDataUrlBytes = (dataURL: string): number => {
+  const separator = dataURL.indexOf(",");
+  if (separator < 0) return dataURL.length;
+  const payload = dataURL.slice(separator + 1).replace(/\s/g, "");
+  const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
+  return Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
 };
 
 const maybeCompressDataUrl = async (
   inputDataURL: string,
   sourceMimeType: string,
-  options?: {
-    minDataUrlLength?: number;
-    maxDimension?: number;
-    minImprovementRatio?: number;
-  },
 ): Promise<CompressionResult> => {
-  if (!isCompressionEnabled()) {
+  if (!readImageCompressionEnabled()) {
     return {
       dataURL: inputDataURL,
       mimeType: sourceMimeType,
@@ -110,11 +109,7 @@ const maybeCompressDataUrl = async (
     };
   }
 
-  const minDataUrlLength =
-    options?.minDataUrlLength ?? DEFAULT_MIN_DATA_URL_LENGTH;
-  const maxDimension = options?.maxDimension ?? DEFAULT_MAX_DIMENSION;
-  const minImprovementRatio =
-    options?.minImprovementRatio ?? DEFAULT_MIN_IMPROVEMENT_RATIO;
+  const minBytes = readImageCompressionThresholdMb() * 1024 * 1024;
 
   if (!isDataImageUrl(inputDataURL)) {
     return {
@@ -141,7 +136,7 @@ const maybeCompressDataUrl = async (
     };
   }
 
-  if (inputDataURL.length < minDataUrlLength) {
+  if (estimateDataUrlBytes(inputDataURL) < minBytes) {
     return {
       dataURL: inputDataURL,
       mimeType: effectiveMimeType,
@@ -154,7 +149,11 @@ const maybeCompressDataUrl = async (
   const image = await loadImageFromDataUrl(inputDataURL);
   const baseWidth = image.naturalWidth || image.width || 1;
   const baseHeight = image.naturalHeight || image.height || 1;
-  const { width, height } = clampDimension(baseWidth, baseHeight, maxDimension);
+  const { width, height } = clampDimension(
+    baseWidth,
+    baseHeight,
+    DEFAULT_MAX_DIMENSION,
+  );
   const canvas = drawToCanvas(image, width, height);
   const targetMimeType = getTargetMimeType(effectiveMimeType);
 
@@ -163,13 +162,16 @@ const maybeCompressDataUrl = async (
 
   for (const quality of qualityCandidates) {
     const next = canvas.toDataURL(targetMimeType, quality);
-    if (next.length < best.length) {
+    // Browsers return "data:," when a canvas cannot be encoded (for example
+    // after exceeding implementation limits). Never replace an image with it.
+    if (isDataImageUrl(next) && next.length < best.length) {
       best = next;
     }
   }
 
   const improvedEnough =
-    best.length <= Math.floor(inputDataURL.length * minImprovementRatio);
+    best.length <=
+    Math.floor(inputDataURL.length * DEFAULT_MIN_IMPROVEMENT_RATIO);
   if (!improvedEnough) {
     return {
       dataURL: inputDataURL,
@@ -214,6 +216,8 @@ const rememberProcessedDataUrl = (dataURL: string): void => {
   processedDataUrls.add(dataURL);
 };
 
+let memoSettings = "";
+
 // Exposed for tests; also useful to drop stale entries between drawings.
 export const resetImageCompressionMemo = (): void => {
   processedDataUrls.clear();
@@ -227,7 +231,12 @@ export const compressExcalidrawFiles = async (
   changedIds: string[];
 }> => {
   const entries = Object.entries(files || {});
-  if (entries.length === 0) {
+  const settings = `${readImageCompressionEnabled()}:${readImageCompressionThresholdMb()}`;
+  if (settings !== memoSettings) {
+    resetImageCompressionMemo();
+    memoSettings = settings;
+  }
+  if (entries.length === 0 || !readImageCompressionEnabled()) {
     return { files, changed: false, changedIds: [] };
   }
 

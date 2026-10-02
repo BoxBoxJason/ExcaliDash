@@ -21,8 +21,8 @@ const login = async (request: import("@playwright/test").APIRequestContext) => {
       ...(await getCsrfHeaders(request)),
     },
     data: {
-      email: "agent-e2e@example.test",
-      password: "Agent-E2E-Password-123!",
+      email: "auth-e2e@example.test",
+      password: "Auth-E2E-Password-123!",
     },
   });
   expect(response.ok()).toBe(true);
@@ -178,31 +178,6 @@ test.describe("UI review screenshots", () => {
         path: path.join(outputDir, "10-history-preview.png"),
       });
       await page.getByLabel("Close version history").click();
-
-      await page.getByRole("button", { name: "Open canvas assistant" }).click();
-      await expect(page.getByLabel("Canvas assistant")).toBeVisible();
-      await expect(page.getByTestId("chatgpt-connect")).toBeVisible();
-      await page.screenshot({
-        path: path.join(outputDir, "11-chatgpt-connect.png"),
-      });
-
-      await page.getByRole("button", { name: "Close assistant" }).click();
-      await page.mouse.move(24, 2);
-      await expect(page.getByTitle("Share")).toBeVisible();
-      await page.getByTitle("Share").click();
-      await expect(page.getByText("Agent access")).toBeVisible();
-      await page.screenshot({
-        path: path.join(outputDir, "12-share-agent-access.png"),
-      });
-
-      await page.getByRole("button", { name: "New token" }).click();
-      await expect(
-        page.getByRole("button", { name: "Copy setup" }),
-      ).toBeVisible();
-      await page.screenshot({
-        path: path.join(outputDir, "13-agent-token-reveal.png"),
-        mask: [page.locator("code").filter({ hasText: /^exd_/ })],
-      });
 
       await deleteDrawing(page.request, drawing.id);
       await page.request.post(`${API_URL}/auth/logout`, {

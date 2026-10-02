@@ -36,7 +36,6 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   authEnabled: boolean | null;
-  aiEnabled: boolean;
   registrationEnabled: boolean;
   authStatusError: string | null;
   authMode: "local" | "hybrid" | "oidc_enforced";
@@ -70,7 +69,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [authEnabled, setAuthEnabled] = useState<boolean | null>(null);
-  const [aiEnabled, setAiEnabled] = useState(true);
   const [registrationEnabled, setRegistrationEnabled] = useState(false);
   const [authStatusError, setAuthStatusError] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<
@@ -94,7 +92,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       try {
         const statusResponse = await authStatus();
         setAuthStatusError(null);
-        setAiEnabled(statusResponse?.aiEnabled !== false);
         const enabled =
           typeof statusResponse?.authEnabled === "boolean"
             ? statusResponse.authEnabled
@@ -220,20 +217,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     loadUser();
   }, [loadUser]);
 
-  useEffect(() => {
-    const refreshAiEnabled = () => {
-      void authStatus()
-        .then((status) => setAiEnabled(status?.aiEnabled !== false))
-        .catch(() => undefined);
-    };
-    const interval = window.setInterval(refreshAiEnabled, 10_000);
-    window.addEventListener("focus", refreshAiEnabled);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", refreshAiEnabled);
-    };
-  }, []);
-
   const login = async (email: string, password: string) => {
     try {
       if (authEnabled === false) {
@@ -333,7 +316,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         user,
         loading,
         authEnabled,
-        aiEnabled,
         registrationEnabled,
         authStatusError,
         authMode,

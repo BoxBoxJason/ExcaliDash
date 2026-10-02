@@ -170,7 +170,9 @@ test.describe("Drawing Version History", () => {
 
     // Verify drawing was restored
     const restored = await getDrawing(request, drawing.id);
-    expect(restored.elements).toBeDefined();
+    expect(restored.elements?.map((element: any) => element.id)).toEqual([
+      "v1-el",
+    ]);
 
     // Verify a backup snapshot was created (count should increase by 1)
     const historyAfter = await request.get(
@@ -178,6 +180,16 @@ test.describe("Drawing Version History", () => {
     );
     const afterData = await historyAfter.json();
     expect(afterData.totalCount).toBe(countBefore + 1);
+    const backup = afterData.snapshots.find(
+      (snapshot: { id: string }) => snapshot.id !== snapshotId,
+    );
+    const backupResp = await request.get(
+      `${API_URL}/drawings/${drawing.id}/history/${backup.id}`,
+    );
+    expect(backupResp.ok()).toBe(true);
+    expect(
+      (await backupResp.json()).elements.map((element: any) => element.id),
+    ).toEqual(["v2-el"]);
   });
 
   test("should return 404 for non-existent snapshot", async ({ request }) => {

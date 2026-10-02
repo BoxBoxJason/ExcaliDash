@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import * as api from "../../api";
 import { reloadAndReconcile } from "./reconcileSave";
 import { compressExcalidrawFiles } from "../../utils/imageCompression";
+import { isDefaultPreviewBackground } from "../../utils/previewSvg";
 import {
   applyUploadedFileRefs,
   getFilesDelta,
@@ -192,7 +193,13 @@ export const useEditorPersistence = ({
           }
         } catch (err) {
           if (api.isAxiosError(err) && err.response?.status === 409) {
-            if (attempt === 0) {
+            if (attempt < 4) {
+              // Concurrent editors can collide again after reconciliation.
+              // Stagger retries, but always merge against the latest version
+              // rather than overwriting another participant's changes.
+              await new Promise((resolve) =>
+                setTimeout(resolve, 100 * 2 ** attempt + Math.random() * 150),
+              );
               const reconciled = await reloadAndReconcile(
                 refs,
                 drawingId,
@@ -200,7 +207,7 @@ export const useEditorPersistence = ({
                 filesToSave,
               );
               await persistScene(
-                1,
+                attempt + 1,
                 reconciled.elements,
                 reconciled.files,
                 true,
@@ -308,7 +315,10 @@ export const useEditorPersistence = ({
         elements: normalizedSnapshot,
         appState: {
           ...appState,
-          exportBackground: true,
+          exportBackground: !isDefaultPreviewBackground(
+            appState.viewBackgroundColor,
+          ),
+          exportWithDarkMode: false,
           viewBackgroundColor: appState.viewBackgroundColor || "#ffffff",
         },
         files: currentFiles,

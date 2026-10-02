@@ -194,7 +194,6 @@ test.describe.serial("Import Functionality", () => {
     await page
       .getByPlaceholder("Search drawings...")
       .fill("Import_ExcalidrawTest");
-    await page.waitForTimeout(1000);
 
     const importedCards = page.locator("[id^='drawing-card-']");
     await expect(importedCards.first()).toBeVisible({ timeout: 10000 });
@@ -256,18 +255,13 @@ test.describe.serial("Import Functionality", () => {
       timeout: 15000,
     });
 
-    const failedIndicator = page.getByText("Failed");
-    if (await failedIndicator.isVisible()) {
-      console.log("Import failed - skipping rest of test");
-      return;
-    }
+    await expect(page.getByText("Failed", { exact: true })).not.toBeVisible();
 
     await page.reload({ waitUntil: "networkidle" });
 
     const searchInput = page.getByPlaceholder("Search drawings...");
     await searchInput.clear();
     await searchInput.fill(testName);
-    await page.waitForTimeout(1500);
 
     const importedCards = page.locator("[id^='drawing-card-']");
     await expect(importedCards.first()).toBeVisible({ timeout: 15000 });
@@ -336,7 +330,6 @@ test.describe.serial("Import Functionality", () => {
     });
 
     await page.getByPlaceholder("Search drawings...").fill(searchPrefix);
-    await page.waitForTimeout(500);
 
     const importedCards = page.locator("[id^='drawing-card-']");
     await expect(importedCards).toHaveCount(2);
@@ -359,6 +352,6 @@ test.describe("Database Import Verification", () => {
       },
     );
 
-    expect([400, 500]).toContain(response.status());
+    expect(response.status()).toBe(400);
   });
 });

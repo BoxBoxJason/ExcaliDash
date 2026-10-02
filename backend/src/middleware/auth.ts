@@ -10,7 +10,6 @@ import {
   readCookie,
 } from "../auth/cookies";
 import {
-  AGENT_OPS_SCOPE,
   apiKeyHashMatches,
   extractApiKeyId,
   isApiKeyToken,
@@ -127,14 +126,6 @@ const getApiKeyRouteResource = (
     ) {
       return "drawings";
     }
-    if (
-      segments.length >= 3 &&
-      ((segments[2] === "ops" && method === "POST") ||
-        (segments[2] === "summary" && ["GET", "HEAD"].includes(method)) ||
-        (segments[2] === "elements" && ["GET", "HEAD"].includes(method)))
-    ) {
-      return "drawings";
-    }
     return null;
   }
   if (segments[0] === "collections") {
@@ -154,19 +145,6 @@ const getRequiredApiKeyScope = (req: Request): string | null => {
   const access =
     req.method === "GET" || req.method === "HEAD" ? "read" : "write";
   return `${resource}:${access}`;
-}; // Returns the drawing id when the request targets one of the per-drawing agent
-// routes (ops POST, summary/elements GET), else null. Used to confine
-// drawing-scoped agent tokens to exactly their drawing's agent surface.
-const getAgentRouteDrawingId = (req: Request): string | null => {
-  const segments = normalizeRequestPath(req).split("/").filter(Boolean);
-  if (segments[0] !== "drawings" || segments.length < 3) return null;
-  const id = segments[1];
-  const sub = segments[2];
-  const method = req.method;
-  if (sub === "ops" && method === "POST") return id;
-  if (sub === "summary" && ["GET", "HEAD"].includes(method)) return id;
-  if (sub === "elements" && ["GET", "HEAD"].includes(method)) return id;
-  return null;
 };
 
 const authorizeApiKeyRequest = (
@@ -175,19 +153,11 @@ const authorizeApiKeyRequest = (
   scopes: string[],
   apiKeyDrawingId: string | null | undefined,
 ): boolean => {
-  // Drawing-scoped agent tokens are refused by every route except their own
-  // drawing's agent routes, and only when carrying the agent:ops scope.
+  // Legacy drawing-scoped keys must never gain account-wide access.
   if (apiKeyDrawingId) {
-    const routeDrawingId = getAgentRouteDrawingId(req);
-    if (
-      routeDrawingId === apiKeyDrawingId &&
-      scopes.includes(AGENT_OPS_SCOPE)
-    ) {
-      return true;
-    }
     res.status(403).json({
       error: "Forbidden",
-      message: "Agent token is not authorized for this route",
+      message: "Drawing-scoped tokens are not supported in this release",
     });
     return false;
   }
@@ -471,8 +441,7 @@ export const createAuthMiddleware = ({
       try {
         const result = await authenticateApiKey(extracted.token);
         if (result) {
-          // Drawing-scoped agent tokens have no place on optionalAuth routes
-          // (none of them are agent routes); refuse rather than attach.
+          // Reject legacy drawing-scoped tokens rather than attach them.
           if (result.drawingId) {
             req.authError = { code: "INVALID_ACCESS_TOKEN" };
             return next();

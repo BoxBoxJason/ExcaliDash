@@ -46,6 +46,7 @@ model SystemConfig {
   bootstrapSetupCodeIssuedAt DateTime?
   bootstrapSetupCodeExpiresAt DateTime?
   bootstrapSetupCodeFailedAttempts Int @default(0)
+  // Legacy AI data is retained for non-destructive upgrades; dev has no AI routes.
   aiProvider                 String?
   aiBaseUrl                  String?
   aiModel                    String?

@@ -1,29 +1,37 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Layout } from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api";
 import type { Collection } from "../types";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { usePreference } from "../context/PreferencesContext";
 import { SettingsMainGrid } from "./settings/SettingsMainGrid";
 import { AdvancedSettings } from "./settings/AdvancedSettings";
 import { SettingsConfirmModals } from "./settings/SettingsConfirmModals";
 import { ApiKeysCard } from "./profile/ApiKeysCard";
-import { AiSettingsCard } from "./admin/AiSettingsCard";
-import { useAiSettings } from "./admin/useAiSettings";
 import { Toaster } from "sonner";
 import { displayFontFamily } from "../utils/displayFont";
 import {
   EXCALIDASH_REQUIRED_MESSAGE,
   isExcalidashFile,
 } from "../utils/importUtils";
+import { resetImageCompressionMemo } from "../utils/imageCompression";
+import {
+  IMAGE_COMPRESSION_ENABLED_KEY,
+  readImageCompressionEnabled,
+  readImageCompressionThresholdMb,
+  writeImageCompressionThresholdMb,
+} from "../utils/imageCompressionSettings";
 export const Settings: React.FC = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { authEnabled, user, authMode } = useAuth();
-  const isSingleUserOwner = authEnabled === false;
-  const isAdmin = isSingleUserOwner || user?.role === "ADMIN";
+  const [editorAutoHide, setEditorAutoHide] = usePreference(
+    "editorAutoHide",
+    true,
+  );
   const mustResetPassword = Boolean(user?.mustResetPassword);
   const [settingsSuccess, setSettingsSuccess] = useState("");
   const [legacyDbImportConfirmation, setLegacyDbImportConfirmation] = useState<{
@@ -47,15 +55,6 @@ export const Settings: React.FC = () => {
   const [legacyDbImportLoading, setLegacyDbImportLoading] = useState(false);
   const [authToggleLoading, setAuthToggleLoading] = useState(false);
   const [authToggleError, setAuthToggleError] = useState<string | null>(null);
-  const setAiError = useCallback(
-    (message: string) => setAuthToggleError(message || null),
-    [],
-  );
-  const aiSettings = useAiSettings({
-    authEnabled,
-    isAdmin,
-    setError: setAiError,
-  });
   const [authToggleConfirm, setAuthToggleConfirm] = useState<{
     isOpen: boolean;
     nextEnabled: boolean | null;
@@ -105,22 +104,28 @@ export const Settings: React.FC = () => {
     };
     fetchCollections();
   }, []);
-  const COMPRESSION_ENABLED_KEY = "excalidash-image-compression";
-  const [imageCompression, setImageCompression] = useState<boolean>(() => {
-    const raw =
-      typeof window === "undefined"
-        ? null
-        : window.localStorage?.getItem?.(COMPRESSION_ENABLED_KEY);
-    return raw !== "false";
-  });
+  const [imageCompression, setImageCompression] = useState(
+    readImageCompressionEnabled,
+  );
+  const [imageCompressionThresholdMb, setImageCompressionThresholdMb] =
+    useState(readImageCompressionThresholdMb);
   const toggleImageCompression = () => {
     const next = !imageCompression;
     try {
-      window.localStorage?.setItem?.(COMPRESSION_ENABLED_KEY, String(next));
+      window.localStorage?.setItem?.(
+        IMAGE_COMPRESSION_ENABLED_KEY,
+        String(next),
+      );
     } catch {
       // Ignore unavailable storage in private/embedded contexts.
     }
+    resetImageCompressionMemo();
     setImageCompression(next);
+  };
+  const updateImageCompressionThreshold = (value: number) => {
+    const next = writeImageCompressionThresholdMb(value);
+    resetImageCompressionMemo();
+    setImageCompressionThresholdMb(next);
   };
   const checkForUpdates = async (channel: api.UpdateChannel) => {
     setUpdateLoading(true);
@@ -334,7 +339,7 @@ export const Settings: React.FC = () => {
           </div>
         )}{" "}
         {settingsSuccess && (
-          <div className="mb-6 rounded-xl border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+          <div className="mb-6 rounded-xl border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
             <p className="font-medium text-green-800 dark:text-green-200">
               {settingsSuccess}
             </p>
@@ -345,25 +350,6 @@ export const Settings: React.FC = () => {
             disabled={mustResetPassword}
             onSuccess={setSettingsSuccess}
           />
-          <AiSettingsCard
-            loading={aiSettings.loading}
-            saving={aiSettings.saving}
-            provider={aiSettings.provider}
-            baseUrl={aiSettings.baseUrl}
-            model={aiSettings.model}
-            apiKey={aiSettings.apiKey}
-            chatgptEnabled={aiSettings.chatgptEnabled}
-            status={aiSettings.status}
-            envKeyConfigured={aiSettings.envKeyConfigured}
-            dbKeyConfigured={aiSettings.dbKeyConfigured}
-            onProviderChange={aiSettings.setProvider}
-            onBaseUrlChange={aiSettings.setBaseUrl}
-            onModelChange={aiSettings.setModel}
-            onApiKeyChange={aiSettings.setApiKey}
-            onChatgptEnabledChange={aiSettings.setChatgptEnabled}
-            onSave={aiSettings.save}
-            onClearDbKey={aiSettings.clearDbKey}
-          />
         </div>
         <div className="mt-10">
           <SettingsMainGrid
@@ -372,6 +358,10 @@ export const Settings: React.FC = () => {
             toggleTheme={toggleTheme}
             imageCompression={imageCompression}
             toggleImageCompression={toggleImageCompression}
+            imageCompressionThresholdMb={imageCompressionThresholdMb}
+            onImageCompressionThresholdChange={updateImageCompressionThreshold}
+            editorAutoHide={editorAutoHide}
+            onEditorAutoHideChange={setEditorAutoHide}
             updateChannel={updateChannel}
             updateInfo={updateInfo}
             updateLoading={updateLoading}

@@ -8,7 +8,6 @@ import {
   rehydrateFilesFromUrls,
 } from "../../utils/rehydrateFiles";
 import { buildRemoteSceneUpdate } from "./shared";
-import { useAgentBatchApplier } from "./useAgentBatchApplier";
 import { attachCanvasZoomForwarding } from "./canvasZoomForwarding";
 
 interface Peer extends UserIdentity {
@@ -28,9 +27,6 @@ type UseEditorCollaborationInput = {
   computeElementOrderSig: (elements: readonly any[]) => string;
   recordElementVersion: (element: any) => void;
   onAccessDenied: () => void;
-  // Batch ids this client originated; consumed to replay self edits as
-  // IMMEDIATELY-capture so native Ctrl+Z works (D5). See useAgentBatchApplier.
-  selfAgentBatchIdsRef?: MutableRefObject<Set<string>>;
 };
 
 const getSocketUrl = () =>
@@ -39,6 +35,24 @@ const getSocketUrl = () =>
     : import.meta.env.VITE_API_URL ||
       import.meta.env.VITE_DEV_BACKEND_URL ||
       "http://localhost:8000";
+
+type RoomJoinSocket = Pick<Socket, "connected" | "emit" | "on" | "off">;
+
+export const bindRoomJoin = (
+  socket: RoomJoinSocket,
+  drawingId: string,
+  user: UserIdentity,
+  onJoined: (payload: any) => void,
+): (() => void) => {
+  const joinRoom = () => {
+    socket.emit("join-room", { drawingId, user }, onJoined);
+  };
+
+  socket.on("connect", joinRoom);
+  if (socket.connected) joinRoom();
+
+  return () => socket.off("connect", joinRoom);
+};
 
 export const useEditorCollaboration = ({
   drawingId,
@@ -53,7 +67,6 @@ export const useEditorCollaboration = ({
   computeElementOrderSig,
   recordElementVersion,
   onAccessDenied,
-  selfAgentBatchIdsRef,
 }: UseEditorCollaborationInput) => {
   const [socketMe, setSocketMe] = useState<UserIdentity>(me);
   const socketMeRef = useRef<UserIdentity>(socketMe);
@@ -69,18 +82,6 @@ export const useEditorCollaboration = ({
   const pendingRemoteElementOrderRef = useRef<string[] | null>(null);
   const remoteFlushScheduledRef = useRef(false);
   const remoteFlushRafIdRef = useRef<number | null>(null);
-  // Agent op batches ride a dedicated buffer so each is applied as a whole with
-  // the right undo-capture mode (self-originated → IMMEDIATELY, else NEVER).
-  const enqueueAgentBatch = useAgentBatchApplier({
-    excalidrawAPI,
-    isSyncing,
-    lastSyncedElementOrderSigRef,
-    latestElementsRef,
-    computeElementOrderSig,
-    recordElementVersion,
-    selfAgentBatchIdsRef,
-  });
-
   useEffect(() => {
     setSocketMe(me);
   }, [me]);
@@ -108,7 +109,7 @@ export const useEditorCollaboration = ({
         (window as any).__EXCALIDASH_SOCKET_STATUS__ = { connected: false };
       });
     }
-    socket.emit("join-room", { drawingId, user: me }, (payload: any) => {
+    const detachRoomJoin = bindRoomJoin(socket, drawingId, me, (payload) => {
       const serverUser = payload?.user;
       if (!serverUser || typeof serverUser.id !== "string") return;
       const next: UserIdentity = {
@@ -264,28 +265,11 @@ export const useEditorCollaboration = ({
         elements,
         files,
         elementOrder,
-        origin,
-        opsBatchId,
       }: {
         elements: any[];
         files?: Record<string, any>;
         elementOrder?: string[];
-        origin?: string;
-        opsBatchId?: string;
       }) => {
-        // Agent op batches are applied atomically (whole batch, resolved undo
-        // mode) via the dedicated applier. Ops never mutate files.
-        if (origin === "agent-ops") {
-          enqueueAgentBatch({
-            opsBatchId,
-            elements: Array.isArray(elements) ? elements : [],
-            elementOrder:
-              Array.isArray(elementOrder) && elementOrder.length > 0
-                ? elementOrder
-                : null,
-          });
-          return;
-        }
         if (Array.isArray(elements)) {
           for (const el of elements) {
             const id = el?.id;
@@ -342,6 +326,7 @@ export const useEditorCollaboration = ({
     );
     const pendingRemoteElements = pendingRemoteElementsRef.current;
     return () => {
+      detachRoomJoin();
       detachCanvasZoom();
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("blur", onBlur);
@@ -376,7 +361,6 @@ export const useEditorCollaboration = ({
     computeElementOrderSig,
     recordElementVersion,
     onAccessDenied,
-    enqueueAgentBatch,
   ]);
 
   const onPointerUpdate = useCallback(

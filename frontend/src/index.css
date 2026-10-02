@@ -99,7 +99,7 @@
   }
 
   .ui-alert-error {
-    @apply rounded-xl border-2 border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300;
+    @apply rounded-xl border-2 border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300;
   }
 
   .auth-page {
@@ -200,4 +200,12 @@ html.dark body {
   src: url("./assets/fonts/Excalifont-Regular.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
+}
+
+/* Same filters as Excalidraw: preserve hue and counter-filter raster images. */
+.dark .drawing-preview > svg {
+  filter: invert(93%) hue-rotate(180deg);
+}
+.dark .drawing-preview [data-preview-raster="true"] {
+  filter: invert(100%) hue-rotate(180deg) saturate(1.25);
 }

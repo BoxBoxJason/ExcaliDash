@@ -69,7 +69,7 @@ export const registerAccountApiKeyRoutes = (
       }
 
       const apiKeys = await prisma.apiKey.findMany({
-        where: { userId: req.user.id },
+        where: { userId: req.user.id, drawingId: null },
         orderBy: { createdAt: "desc" },
         select: {
           id: true,

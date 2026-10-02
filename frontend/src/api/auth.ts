@@ -30,7 +30,6 @@ let csrfTokenPromise: Promise<void> | null = null;
 let refreshPromise: Promise<void> | null = null;
 
 export interface AuthStatusResponse {
-  aiEnabled?: boolean;
   authEnabled?: boolean;
   enabled?: boolean;
   registrationEnabled?: boolean;
@@ -61,6 +60,7 @@ export interface UserPreferences {
   dashboardSortDirection?: SortDirection;
   language?: string;
   gridStep?: number;
+  editorAutoHide?: boolean;
 }
 
 export interface ApiKeyMetadata {

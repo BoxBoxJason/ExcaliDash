@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock } from "lucide-react";
 import * as api from "../../api";
 import { PasswordRequirements } from "../../components/PasswordRequirements";
 import { PasswordInput } from "../../components/PasswordInput";
@@ -12,7 +11,6 @@ import {
 import {
   SettingsCard,
   SettingsRow,
-  SettingsSectionHeader,
   settingsButtonClass,
   settingsSelectClass,
 } from "../settings/SettingsRow";
@@ -98,14 +96,7 @@ export const PasswordCard: React.FC<Props> = ({
     "mb-1 block text-xs font-semibold text-slate-500 dark:text-neutral-400";
 
   return (
-    <section>
-      <SettingsSectionHeader
-        icon={<Lock size={20} />}
-        tileClassName="border-black bg-rose-400 text-black dark:border-neutral-700 dark:bg-rose-400 dark:text-black"
-        title="Password"
-        subtitle="Keep your account secure"
-      />
-
+    <section aria-label="Change password">
       <SettingsCard>
         {!showPasswordForm ? (
           <SettingsRow

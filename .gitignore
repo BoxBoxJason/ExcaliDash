@@ -75,6 +75,12 @@ e2e/.playwright/
 # Docker volumes (if any temporary ones are created)
 docker-volumes/
 
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+artifacts/docs-review/
+artifacts/marketing/
+
 # Logs
 *.log
 logs/

@@ -15,6 +15,23 @@ export default tseslint.config(
     ],
   },
   {
+    files: ["*.{js,mjs}", "scripts/**/*.mjs"],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.node,
+    },
+  },
+  {
+    files: ["*.cjs"],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.node,
+      sourceType: "commonjs",
+    },
+  },
+  {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -52,14 +69,6 @@ export default tseslint.config(
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-    },
-  },
-  {
-    files: ["**/*.{test,spec}.{ts,tsx}"],
-    languageOptions: {
-      globals: {
-        ...globals.vitest,
-      },
     },
   },
 );

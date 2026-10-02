@@ -10,7 +10,6 @@ import * as api from "../api";
 import { useAuth } from "../context/AuthContext";
 import { GeneralAccessSection } from "./share-modal/GeneralAccessSection";
 import { SharePeopleSection } from "./share-modal/SharePeopleSection";
-import { AgentAccessSection } from "./share-modal/AgentAccessSection";
 import {
   calculateExpiresAt,
   DEFAULT_EDIT_EXPIRY_OPTION,
@@ -314,8 +313,6 @@ export const ShareModal: React.FC<Props> = ({ drawingId, isOpen, onClose }) => {
             handleUpdateLink={handleUpdateLink}
             handleRevokeLink={handleRevokeLink}
           />
-
-          <AgentAccessSection drawingId={drawingId} isOpen={isOpen} />
         </div>
 
         {/* Footer */}

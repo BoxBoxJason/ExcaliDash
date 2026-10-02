@@ -136,7 +136,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             disabled={!oidcEnabled}
             className={`w-full px-4 py-3 rounded-xl border-2 font-bold transition-all text-sm ${
               oidcOnly
-                ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200"
+                ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200"
                 : "border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300"
             } ${!oidcEnabled ? "opacity-60 cursor-not-allowed" : ""}`}
           >
@@ -201,7 +201,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               disabled={oidcOnly}
               className={`w-full px-4 py-3 rounded-xl border-2 font-bold transition-all text-sm ${
                 mustReset
-                  ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200"
+                  ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200"
                   : "border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300"
               } ${oidcOnly ? "opacity-60 cursor-not-allowed" : ""}`}
             >
@@ -221,7 +221,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               onClick={() => setActive(!active)}
               className={`w-full px-4 py-3 rounded-xl border-2 font-bold transition-all text-sm ${
                 active
-                  ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
+                  ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
                   : "border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300"
               }`}
             >

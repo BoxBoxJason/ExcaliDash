@@ -59,13 +59,14 @@ export const PasswordResetRequest: React.FC = () => {
           {enabled && !submitted ? (
             <form className="ui-card p-5 space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="ui-label" htmlFor="reset-email">
+                <label className="sr-only" htmlFor="reset-email">
                   Email address
                 </label>
                 <input
                   id="reset-email"
-                  className="ui-input mt-1"
+                  className="ui-input"
                   type="email"
+                  placeholder="Email address"
                   autoComplete="email"
                   required
                   value={email}

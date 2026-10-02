@@ -11,6 +11,7 @@ services:
       - PORT=8000
       - NODE_ENV=production
       - AUTH_MODE=${AUTH_MODE:-local}
+      - FILE_UPLOAD_MAX_MB=${FILE_UPLOAD_MAX_MB:-100}
       # Keep disabled by default; only enable when a trusted proxy sanitizes forwarded headers.
       - TRUST_PROXY=false
       # Optional for single-instance deployments:
@@ -24,7 +25,7 @@ services:
       # - OIDC_CLIENT_ID=your-client-id
       # - OIDC_CLIENT_SECRET=your-client-secret
       # - OIDC_REDIRECT_URI=https://excalidash.example.com/api/auth/oidc/callback
-      # Optional scheduled SQLite backups (see docs/DEPLOYMENT.md > Backups).
+      # Optional scheduled SQLite backups.
       # BACKUP_SCHEDULE is a 5- or 6-field cron expression; unset disables it.
       # Uncomment these together with the backup-data volume mount below.
       # - BACKUP_SCHEDULE=0 0 4 * * *
