@@ -71,7 +71,7 @@ export const SettingsMainGrid = ({
           aria-label={t("settings.language")}
           value={language}
           onChange={(event) => setLanguage(event.target.value)}
-          className="rounded-lg border-2 border-black bg-white px-2 py-1.5 text-sm font-bold text-black dark:border-neutral-600"
+          className="ui-input text-sm font-bold"
         >
           <option value="en">English</option>
           <option value="zh-CN">简体中文</option>
@@ -119,8 +119,7 @@ export const SettingsMainGrid = ({
         }
       >
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1 text-xs font-bold">
-            <span>MB</span>
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-neutral-300">
             <input
               aria-label="Image compression threshold in MB"
               type="number"
@@ -143,8 +142,9 @@ export const SettingsMainGrid = ({
               onKeyDown={(event) => {
                 if (event.key === "Enter") event.currentTarget.blur();
               }}
-              className="w-16 rounded border-2 border-black bg-white px-1.5 py-1 text-black disabled:opacity-50 dark:border-neutral-600"
+              className="ui-input w-24 text-sm tabular-nums disabled:opacity-50"
             />
+            <span>MB</span>
           </label>
           <PlayfulSwitch
             checked={imageCompression}

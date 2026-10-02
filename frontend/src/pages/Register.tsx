@@ -160,13 +160,15 @@ export const Register: React.FC = () => {
               </>
             )}
           </p>
+        </div>
+        <form className="auth-panel" onSubmit={handleSubmit}>
           {bootstrapRequired && (
-            <div className="mt-3 rounded-xl border-2 border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+            <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
               <div className="font-semibold">One-time setup code</div>
-              <div className="mt-1 text-amber-800 dark:text-amber-200/90">
+              <div className="mt-1 text-amber-800 dark:text-amber-200">
                 Copy it from the backend logs:
               </div>
-              <div className="mt-2 rounded bg-amber-100 dark:bg-amber-900/30 p-2">
+              <div className="mt-2 rounded bg-white dark:bg-neutral-900 p-2">
                 <div className="flex items-start gap-2">
                   <pre className="min-w-0 flex-1 whitespace-pre-wrap break-words text-[11px] leading-snug">
                     <code className="select-all">{bootstrapLogsCommand}</code>
@@ -192,8 +194,6 @@ export const Register: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
-        <form className="auth-panel" onSubmit={handleSubmit}>
           {error && (
             <div className="ui-alert-error">
               <div>{error}</div>
