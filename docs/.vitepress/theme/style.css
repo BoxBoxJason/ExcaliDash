@@ -95,6 +95,18 @@ body {
   backdrop-filter: blur(14px);
 }
 
+.Layout .VPNavBar .divider {
+  display: none;
+}
+
+.Layout .VPNavBarTitle.has-sidebar .title {
+  border-bottom: 0;
+}
+
+.Layout:not(.canvas-home) .VPLocalNav {
+  border-bottom: 0;
+}
+
 .VPNavBarTitle .title {
   font-weight: 800;
   letter-spacing: -0.035em;
